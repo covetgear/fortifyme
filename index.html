@@ -1,0 +1,724 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Combo Locker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-in">
+      <a class="brand view-link" href="?view=shop" data-view="shop">
+        <span class="monogram">CL</span><span class="brand-name">combo locker</span>
+      </a>
+      <nav class="main-nav" aria-label="Main">
+        <button class="nav-btn" data-view="shop">Item shop</button>
+        <button class="nav-btn" data-view="build">Combo builder</button>
+      </nav>
+      <nav class="side-nav" aria-label="Account">
+        <button class="nav-link" id="nav-wishlist"><img src="assets/icons/star-nav.svg" width="20" height="20" alt="">Wishlist</button>
+        <button class="nav-btn nav-account" data-view="account">My account</button>
+        <button class="nav-btn guest-btn nav-login" data-view="login">Log in</button>
+      </nav>
+      <!-- Shown instead of the account nav on the Sign up and Log in pages -->
+      <nav class="guest-nav" aria-label="Account">
+        <span class="guest-q" id="guest-q"></span>
+        <button class="nav-btn guest-btn" id="guest-btn"></button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ========== Item shop ========== -->
+  <main id="view-shop" class="view hidden">
+    <section class="page-head">
+      <div>
+        <p class="eyebrow">The daily rotation</p>
+        <h1>Find your next signature look.</h1>
+        <p class="lead">Explore the shop. Save your favorites. Build a combo that’s yours.</p>
+      </div>
+      <div class="shop-date">
+        <div class="date-card">
+          <img src="assets/icons/calendar.svg" width="20" height="20" alt="">
+          <div>
+            <div class="date-main" id="shop-date-main"></div>
+            <div class="date-sub" id="shop-date-sub"></div>
+          </div>
+        </div>
+        <p class="date-note" id="shop-date-note"></p>
+      </div>
+    </section>
+
+    <section class="featured" id="featured"></section>
+
+    <section class="browse">
+      <div class="browse-head">
+        <h2>Browse collections</h2>
+        <button class="all-link" id="all-collections">All collections <img src="assets/icons/arrow-muted.svg" width="18" height="18" alt=""></button>
+      </div>
+      <div class="chips" id="collection-chips"></div>
+      <hr class="divider">
+      <div class="shop-controls">
+        <label class="search-box">
+          <img src="assets/icons/search.svg" width="20" height="20" alt="">
+          <input id="shop-search" type="search" placeholder="Search outfits, bundles, and more…">
+        </label>
+        <label class="select-box">
+          <select id="shop-type" aria-label="Item type">
+            <option value="">All item types</option>
+            <option value="outfit">Outfits</option>
+            <option value="backpack">Back blings</option>
+            <option value="pickaxe">Pickaxes</option>
+            <option value="glider">Gliders</option>
+            <option value="sidekick">Sidekicks</option>
+            <option value="emote">Emotes</option>
+            <option value="wrap">Wraps</option>
+            <option value="shoe">Kicks</option>
+            <option value="car">Cars</option>
+            <option value="instrument">Instruments</option>
+            <option value="jamtrack">Jam Tracks</option>
+          </select>
+          <img src="assets/icons/down.svg" width="18" height="18" alt="">
+        </label>
+        <button class="toggle-box" id="shop-wish" aria-pressed="false"><img src="assets/icons/star-filter.svg" width="18" height="18" alt="">Wishlist only</button>
+        <button class="toggle-box" id="shop-tracks" aria-pressed="false"><img src="assets/icons/music.svg" width="18" height="18" alt="">Show Jam Tracks</button>
+        <label class="sort-box">
+          <select id="shop-sort" aria-label="Sort">
+            <option value="featured">Sort: Featured</option>
+            <option value="price-desc">Sort: Price, high to low</option>
+            <option value="price-asc">Sort: Price, low to high</option>
+            <option value="leaving">Sort: Leaving soon</option>
+          </select>
+          <img src="assets/icons/down.svg" width="18" height="18" alt="">
+        </label>
+      </div>
+    </section>
+
+    <div id="shop-sections"></div>
+
+    <section class="invite">
+      <div>
+        <h2>Great pieces. Better together.</h2>
+        <p>Mix your favorites and find your next combo.</p>
+      </div>
+      <button class="btn-primary view-link" data-view="build">Open combo builder <img src="assets/icons/arrow-dark-2.svg" width="18" height="18" alt=""></button>
+    </section>
+  </main>
+
+  <!-- ========== Item details pop-up ========== -->
+  <dialog id="entry-dialog" class="entry-dialog" aria-label="Item details">
+    <div id="entry-body"></div>
+  </dialog>
+
+  <!-- ========== Combo builder ========== -->
+  <main id="view-build" class="view hidden">
+    <section class="page-head">
+      <div>
+        <p class="eyebrow">Make it yours</p>
+        <h1>Your next signature combo.</h1>
+        <p class="lead" id="build-lead"></p>
+      </div>
+      <span class="status-pill" id="combo-status">Unsaved combo</span>
+    </section>
+
+    <div class="builder">
+      <aside class="builder-side">
+        <div class="preview-card" id="preview"></div>
+
+        <div class="loadout-head">
+          <h2>Your loadout</h2>
+          <span id="loadout-count"></span>
+        </div>
+        <ul class="loadout" id="loadout"></ul>
+
+        <div class="save-card">
+          <label for="combo-name">Give your combo a name</label>
+          <input id="combo-name" type="text" maxlength="40" placeholder="e.g. Hero after hours">
+          <div class="save-row">
+            <button id="btn-save" class="btn-primary">Save combo</button>
+            <button id="btn-share" class="btn-secondary"><img src="assets/icons/share.svg" width="18" height="18" alt="">Share</button>
+          </div>
+          <div class="save-links">
+            <button id="btn-random" class="text-btn"><img src="assets/icons/shuffle.svg" width="17" height="17" alt="">Randomize</button>
+            <button id="btn-clear" class="text-btn clear">Clear combo</button>
+          </div>
+        </div>
+        <p class="disclaimer"><img src="assets/icons/info.svg" width="16" height="16" alt="">Item artwork preview only. Select a thumbnail to inspect an item; this is not an in-game 3D render.</p>
+      </aside>
+
+      <section class="browser">
+        <h2 id="browser-title"></h2>
+        <p class="browser-sub" id="browser-sub"></p>
+        <div class="tabs" id="slot-tabs" role="tablist"></div>
+        <label class="search-box tall">
+          <img src="assets/icons/search.svg" width="20" height="20" alt="">
+          <input id="search" type="search" placeholder="Search by name or set…">
+        </label>
+        <div class="browser-filters">
+          <label class="select-box small">
+            <select id="rarity" aria-label="Rarity"><option value="">All rarities</option></select>
+            <img src="assets/icons/down-sm.svg" width="16" height="16" alt="">
+          </label>
+          <button class="toggle-box small check-toggle" id="in-shop" aria-pressed="false"><span class="checkbox"></span>In shop</button>
+          <button class="toggle-box small" id="favorites-only" aria-pressed="false"><img src="assets/icons/heart-filter.svg" width="16" height="16" alt="">Favorites</button>
+          <label class="sort-box small">
+            <select id="sort" aria-label="Sort">
+              <option value="featured">Sort: Featured</option>
+              <option value="new">Sort: Newest</option>
+              <option value="old">Sort: Oldest</option>
+              <option value="az">Sort: A–Z</option>
+            </select>
+            <img src="assets/icons/down-sm.svg" width="16" height="16" alt="">
+          </label>
+        </div>
+        <div class="result-row">
+          <span id="result-count"></span>
+          <span id="result-hint"></span>
+        </div>
+        <div class="item-grid" id="grid"></div>
+        <div class="pager">
+          <span id="pager-text"></span>
+          <div class="pager-btns" id="pager"></div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- ========== My account ========== -->
+  <main id="view-account" class="view hidden">
+    <section class="page-head account-head">
+      <div>
+        <p class="eyebrow">Your personal locker</p>
+        <h1>All your favorites. In one place.</h1>
+        <p class="lead">Keep your combos, track your wishlist, and never miss a shop return.</p>
+        <div class="stats">
+          <div><strong id="stat-combos">0</strong><span id="stat-combos-l">Saved combos</span></div>
+          <div><strong id="stat-wish">0</strong><span id="stat-wish-l">Wishlisted items</span></div>
+          <div><strong id="stat-fav">0</strong><span>Favorites</span></div>
+        </div>
+      </div>
+      <div class="account-tools">
+        <span class="muted small" id="account-email"></span>
+        <button class="text-btn" id="btn-logout">Log out</button>
+      </div>
+    </section>
+
+    <div class="account">
+      <div class="account-main">
+        <section>
+          <div class="block-head"><h2>Saved combos</h2><span id="combo-count"></span></div>
+          <div id="saved-combos"></div>
+        </section>
+        <div class="lists">
+          <section id="wishlist-section">
+            <div class="block-head"><h2>Wishlist <span class="count" id="wish-count">0</span></h2></div>
+            <div class="mini-grid" id="wishlist-grid"></div>
+          </section>
+          <section>
+            <div class="block-head"><h2>Favorites <span class="count" id="fav-count">0</span></h2></div>
+            <div class="mini-grid" id="liked-grid"></div>
+          </section>
+        </div>
+      </div>
+
+      <aside class="account-side">
+        <section>
+          <div class="block-head"><h2>Wishlist email alerts</h2></div>
+          <div class="panel alerts">
+            <h3>Never miss a return.</h3>
+            <p class="muted">Get an email the day a wishlisted item lands in the Item Shop.</p>
+            <p class="muted small">Includes its price, time in the shop, and last appearance.</p>
+            <p class="field-label">Alerts go to</p>
+            <p class="alert-to" id="alert-email"></p>
+            <div class="switch-row">
+              <label for="alert-on">Email me</label>
+              <input id="alert-on" class="switch" type="checkbox" role="switch">
+            </div>
+            <p class="muted small" id="alert-status"></p>
+            <button id="btn-alert-save" class="btn-primary wide">Save preferences</button>
+          </div>
+        </section>
+        <div class="panel notice">
+          <p class="eyebrow small" id="check-date"></p>
+          <h3 id="check-title"></h3>
+          <p class="muted small" id="check-text"></p>
+          <hr class="divider">
+          <p class="muted xsmall">Saved to your account, so your locker is the same on every device.</p>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <!-- ========== Contact ========== -->
+  <main id="view-contact" class="view hidden">
+    <section class="contact">
+      <p class="eyebrow">Feedback</p>
+      <h1>Contact us</h1>
+      <p class="lead">Found a bug, spotted wrong shop data, or have an idea for a feature? Send us a message.</p>
+      <form id="contact-form" class="panel contact-form" novalidate>
+        <label>Topic
+          <span class="select-box"><select id="contact-topic" name="topic">
+            <option value="general">General question</option>
+            <option value="bug">Bug report</option>
+            <option value="data">Wrong item or shop data</option>
+            <option value="idea">Feature idea</option>
+            <option value="sponsor">Sponsorship or advertising</option>
+            <option value="privacy">Privacy request (see, fix or delete my data)</option>
+            <option value="legal">Copyright or legal</option>
+          </select><img src="assets/icons/down.svg" width="18" height="18" alt=""></span>
+        </label>
+        <label>Name <span class="opt">(optional)</span>
+          <input id="contact-name" class="field" name="name" type="text" maxlength="80" autocomplete="nickname">
+        </label>
+        <label>Email <span class="opt">(so we can reply)</span>
+          <input id="contact-email" class="field" name="email" type="email" maxlength="200" autocomplete="email" required>
+        </label>
+        <label>Message
+          <textarea id="contact-message" class="field" name="message" rows="7" maxlength="5000" required></textarea>
+        </label>
+        <!-- Spam trap: hidden from people, bots tend to fill it in -->
+        <label class="trap" aria-hidden="true">Website <input name="website" type="text" tabindex="-1" autocomplete="off"></label>
+        <div class="contact-actions">
+          <button type="submit" class="btn-primary" id="contact-send">Send message</button>
+          <span id="contact-status" class="muted small" role="status"></span>
+        </div>
+      </form>
+      <p class="muted small">Under 13? Ask a parent or guardian before sending us your email address.</p>
+    </section>
+  </main>
+
+  <!-- ========== Sign up ========== -->
+  <main id="view-signup" class="view hidden">
+    <div class="auth-split">
+      <section class="auth-intro">
+        <p class="eyebrow">Your personal locker</p>
+        <h1>Your next great<br>look starts here.</h1>
+        <p class="auth-lead">Save your combos, keep your favorites close, and never miss a shop return.</p>
+        <div class="auth-previews" id="signup-previews"></div>
+        <dl class="auth-benefits">
+          <dt>Make it yours.</dt>
+          <dd>Save your combos and favorites across devices.</dd>
+          <dt>Never miss a return.</dt>
+          <dd>Choose wishlist email alerts. You’re in control.</dd>
+        </dl>
+      </section>
+
+      <form class="auth-card" id="signup-form" novalidate>
+        <div class="auth-head">
+          <h2>Create your locker</h2>
+          <p>All your favorites. In one place.</p>
+        </div>
+        <div class="auth-fields">
+          <div class="auth-field">
+            <label for="signup-email">Email address</label>
+            <input class="auth-input" id="signup-email" name="email" type="email" placeholder="you@example.com" autocomplete="email" required>
+          </div>
+          <div class="auth-field">
+            <label for="signup-password">Password</label>
+            <div class="pw-wrap">
+              <input class="auth-input" id="signup-password" name="password" type="password" placeholder="Create a password" autocomplete="new-password" minlength="12" required aria-describedby="signup-pw-hint">
+              <button type="button" class="pw-toggle" aria-controls="signup-password" aria-pressed="false">Show</button>
+            </div>
+            <p class="auth-hint" id="signup-pw-hint">Use at least 12 characters.</p>
+          </div>
+        </div>
+        <div class="auth-optin">
+          <label class="check-row"><input type="checkbox" class="check" id="signup-alerts" name="alerts"><span>Email me when my wishlist items return.</span></label>
+          <p class="auth-hint">Optional. You can change this in your account.</p>
+        </div>
+        <div class="auth-actions">
+          <p class="auth-error" id="signup-error" role="alert"></p>
+          <button type="submit" class="btn-primary auth-submit">Create account</button>
+          <p class="auth-legal">By creating an account, you agree to our <a href="?view=terms" class="view-link" data-view="terms">Terms of Service</a> and <a href="?view=privacy" class="view-link" data-view="privacy">Privacy Policy</a>.</p>
+        </div>
+        <p class="auth-switch">Already have an account? <a href="?view=login" class="view-link" data-view="login">Log in</a></p>
+      </form>
+
+      <!-- Shown instead of the form once the confirmation email is on its way -->
+      <div class="auth-card auth-sent hidden" id="signup-sent" role="status">
+        <div class="auth-head">
+          <p class="eyebrow">Almost there</p>
+          <h2>Check your inbox</h2>
+          <p>We sent a link to <strong id="sent-email"></strong>. Open it to confirm your email and finish creating your locker.</p>
+        </div>
+        <p class="auth-hint">Can’t find it? Check your spam or promotions folder. The link works once.</p>
+        <div class="auth-actions">
+          <p class="auth-error" id="sent-error" role="alert"></p>
+          <button type="button" class="btn-secondary auth-submit" id="btn-resend">Send the email again</button>
+        </div>
+        <p class="auth-switch">Wrong email? <a href="?view=signup" id="sent-restart">Start again</a></p>
+      </div>
+    </div>
+  </main>
+
+  <!-- ========== Log in ========== -->
+  <main id="view-login" class="view hidden">
+    <div class="auth-center">
+      <form class="auth-card login-card" id="login-form" novalidate>
+        <div class="auth-head">
+          <p class="eyebrow">Your personal locker</p>
+          <h1>Welcome back<br>to your locker.</h1>
+          <p>Your combos and favorites are waiting.</p>
+        </div>
+        <div class="auth-fields">
+          <div class="auth-field">
+            <label for="login-email">Email address</label>
+            <input class="auth-input" id="login-email" name="email" type="email" placeholder="you@example.com" autocomplete="email" required>
+          </div>
+          <div class="auth-field">
+            <div class="label-row">
+              <label for="login-password">Password</label>
+              <button type="button" class="link-btn" id="btn-forgot">Forgot password?</button>
+            </div>
+            <div class="pw-wrap">
+              <input class="auth-input" id="login-password" name="password" type="password" placeholder="Enter your password" autocomplete="current-password" required>
+              <button type="button" class="pw-toggle" aria-controls="login-password" aria-pressed="false">Show</button>
+            </div>
+          </div>
+        </div>
+        <div class="auth-actions login-actions">
+          <p class="auth-error" id="login-error" role="alert"></p>
+          <button type="submit" class="btn-primary auth-submit">Log in</button>
+          <p class="auth-switch">New here? <a href="?view=signup" class="view-link" data-view="signup">Create an account</a></p>
+        </div>
+      </form>
+      <p class="auth-switch auth-browse">Just browsing? <a href="?view=shop" class="view-link" data-view="shop">Explore the item shop</a></p>
+    </div>
+  </main>
+
+  <!-- ========== Set a new password (from the reset email) ========== -->
+  <main id="view-reset" class="view hidden">
+    <div class="auth-center">
+      <form class="auth-card login-card" id="reset-form" novalidate>
+        <div class="auth-head">
+          <p class="eyebrow">Your personal locker</p>
+          <h1>Choose a new password.</h1>
+          <p>You’re signed in. Set a new password to use next time.</p>
+        </div>
+        <!-- Lets password managers file the new password under the right account -->
+        <input type="email" id="reset-username" name="username" autocomplete="username" class="trap" tabindex="-1" aria-hidden="true">
+        <div class="auth-fields">
+          <div class="auth-field">
+            <label for="reset-password">New password</label>
+            <div class="pw-wrap">
+              <input class="auth-input" id="reset-password" name="password" type="password" placeholder="Create a password" autocomplete="new-password" minlength="12" required aria-describedby="reset-pw-hint">
+              <button type="button" class="pw-toggle" aria-controls="reset-password" aria-pressed="false">Show</button>
+            </div>
+            <p class="auth-hint" id="reset-pw-hint">Use at least 12 characters.</p>
+          </div>
+        </div>
+        <div class="auth-actions login-actions">
+          <p class="auth-error" role="alert"></p>
+          <button type="submit" class="btn-primary auth-submit">Save new password</button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <!-- ========== Alerts turned off (from the email's unsubscribe link) ========== -->
+  <main id="view-alerts-off" class="view hidden">
+    <section class="notfound">
+      <p class="eyebrow">Wishlist alerts</p>
+      <h1 id="alerts-off-title">Alerts are off.</h1>
+      <p class="lead" id="alerts-off-text">You won’t get any more wishlist emails. Your wishlist is still saved, and you can turn alerts back on in My account.</p>
+      <div class="nf-actions">
+        <a href="?view=account" class="btn-primary view-link" data-view="account">Go to My account</a>
+        <a href="?view=shop" class="btn-secondary view-link" data-view="shop">Go to the item shop</a>
+      </div>
+    </section>
+  </main>
+
+  <!-- ========== Privacy ========== -->
+  <main id="view-privacy" class="view hidden">
+    <article class="legal">
+      <p class="eyebrow">Your data, plainly</p>
+      <h1>Privacy Policy</h1>
+      <p class="lead">What Combo Locker collects, why, who sees it, and how to get it changed or deleted.</p>
+      <p class="legal-date">Last updated 12 November 2026 <span class="proto-badge">Draft</span></p>
+
+      <nav class="legal-toc" aria-label="On this page">
+        <a href="#p-short">The short version</a>
+        <a href="#p-collect">What we collect</a>
+        <a href="#p-use">How we use it</a>
+        <a href="#p-cookies">Cookies and storage</a>
+        <a href="#p-emails">Emails</a>
+        <a href="#p-share">Who we share it with</a>
+        <a href="#p-kids">Children</a>
+        <a href="#p-keep">How long we keep it</a>
+        <a href="#p-rights">Your rights</a>
+        <a href="#p-security">Security and transfers</a>
+        <a href="#p-changes">Changes and contact</a>
+      </nav>
+
+      <section id="p-short">
+        <h2>The short version</h2>
+        <ul>
+          <li>You can browse the shop and build combos without an account.</li>
+          <li>If you sign up, we keep your email address and your locker: favorites, wishlist, saved combos and alert settings.</li>
+          <li>We only email you about your wishlist if you turn alerts on, and you can turn them off any time.</li>
+          <li>We don’t sell your data. Analytics and personalized ads only run if you say yes in Cookie settings.</li>
+          <li>Combo Locker is a fan site. It is not run by, or connected to, Epic Games. We never ask for your Epic account.</li>
+        </ul>
+      </section>
+
+      <section id="p-collect">
+        <h2>What we collect</h2>
+        <h3>When you create an account</h3>
+        <p>Your email address and password. Your password is stored only as a scrambled hash by our sign-in provider; nobody at Combo Locker can read it.</p>
+        <h3>When you use your locker</h3>
+        <p>The items you favorite or wishlist, the combos you save and their names, whether wishlist alerts are on, and your time zone (so alert emails show shop times in your local time).</p>
+        <h3>When you contact us</h3>
+        <p>The topic, your email address, your message, your name if you give one, and the page you sent it from.</p>
+        <h3>Automatically</h3>
+        <p>Like most websites, our servers log your IP address, browser type and the pages you request, to keep the site running and secure. If you allow analytics, we also count visits and which pages are used. If you allow personalized ads, our ad partner may use cookies or similar identifiers.</p>
+        <h3>What we don’t collect</h3>
+        <p>Your Epic Games account, payment details, real name, address, phone number or precise location.</p>
+      </section>
+
+      <section id="p-use">
+        <h2>How we use it</h2>
+        <div class="legal-table-wrap">
+          <table class="legal-table">
+            <thead><tr><th scope="col">Why</th><th scope="col">What we use</th><th scope="col">Legal basis (UK/EU)</th></tr></thead>
+            <tbody>
+              <tr><td>Run your account and keep your locker in sync across devices</td><td>Email, password hash, locker</td><td>Providing the service you asked for</td></tr>
+              <tr><td>Send wishlist alerts</td><td>Email, wishlist, time zone</td><td>Your consent (the alerts switch)</td></tr>
+              <tr><td>Answer your messages</td><td>Contact form details</td><td>Legitimate interests</td></tr>
+              <tr><td>Keep the site secure and working</td><td>Server logs</td><td>Legitimate interests</td></tr>
+              <tr><td>Understand which pages are used</td><td>Analytics</td><td>Your consent (Cookie settings)</td></tr>
+              <tr><td>Show ads that pay for the site</td><td>Ad cookies (personalized only with consent)</td><td>Your consent for personalized ads; legitimate interests for non-personalized ads</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="p-cookies">
+        <h2>Cookies and storage</h2>
+        <p><strong>Essential</strong> (always on): your browser stores your locker and your cookie choice, and keeps you signed in. The site can’t work without these.</p>
+        <p><strong>Analytics</strong> (off unless you allow it): counts visits and page use.</p>
+        <p><strong>Personalized ads</strong> (off unless you allow it): lets our ad partner choose ads based on your activity. Without it you may still see ads, but they aren’t based on your activity.</p>
+        <p>If your browser sends a Global Privacy Control signal, we treat it as “no” to personalized ads.</p>
+        <p><button type="button" class="btn-secondary consent-link">Cookie settings</button></p>
+      </section>
+
+      <section id="p-emails">
+        <h2>Emails</h2>
+        <p>We only send wishlist alerts if you turn them on. Each alert tells you how to stop them: remove the item from your wishlist or turn off alerts in My account. We also send emails you need for your account, such as password resets.</p>
+      </section>
+
+      <section id="p-share">
+        <h2>Who we share it with</h2>
+        <p>We don’t sell your personal information. We use a few service providers that handle data only to run Combo Locker for us:</p>
+        <ul>
+          <li><strong>Hosting</strong>: serves the website.</li>
+          <li><strong>Database and sign-in</strong>: stores your account and locker.</li>
+          <li><strong>Email delivery</strong>: sends alert and account emails.</li>
+          <li><strong>Advertising partner</strong>: shows ads, personalized only if you allow it.</li>
+        </ul>
+        <p>Item images load from fortnite-api.com and the site font loads from Google Fonts, so those services receive your IP address when pages load. We may also share information if the law requires it.</p>
+      </section>
+
+      <section id="p-kids">
+        <h2>Children</h2>
+        <p>Anyone can browse Combo Locker without an account. Children under 13 shouldn’t create an account or send us their email address without a parent or guardian. We don’t knowingly collect personal information from children under 13. If you think a child has given us their details, contact us and we’ll delete them.</p>
+      </section>
+
+      <section id="p-keep">
+        <h2>How long we keep it</h2>
+        <ul>
+          <li>Account and locker: until you delete your account.</li>
+          <li>Contact messages: up to 12 months.</li>
+          <li>Record of alerts sent: up to 12 months, so we don’t email you twice for the same shop appearance.</li>
+          <li>Server logs: up to 30 days.</li>
+        </ul>
+      </section>
+
+      <section id="p-rights">
+        <h2>Your rights</h2>
+        <p>You can ask to see, correct, download or delete your data, and you can withdraw consent at any time (turn off alerts, or change Cookie settings). Depending on where you live, for example in the UK, EU or California, you may have more rights, including objecting to how we use your data and complaining to your local data protection authority.</p>
+        <p>To make a request, use the <a href="?view=contact" class="view-link" data-view="contact">contact form</a> and choose “Privacy request”. We’ll reply within 30 days.</p>
+      </section>
+
+      <section id="p-security">
+        <h2>Security and transfers</h2>
+        <p>The site uses HTTPS, passwords are stored only as hashes, and access to your data is limited to what’s needed to run the site. Our service providers may store data in the United States or other countries; where the law requires it, they protect it with standard contractual safeguards.</p>
+      </section>
+
+      <section id="p-changes">
+        <h2>Changes and contact</h2>
+        <p>If we change this policy, we’ll update the date at the top. If a change affects how we use your data in a big way, we’ll tell you by email or on the site first.</p>
+        <p>Questions? Use the <a href="?view=contact" class="view-link" data-view="contact">contact form</a>.</p>
+      </section>
+    </article>
+  </main>
+
+  <!-- ========== Terms of Service ========== -->
+  <main id="view-terms" class="view hidden">
+    <article class="legal">
+      <p class="eyebrow">The ground rules</p>
+      <h1>Terms of Service</h1>
+      <p class="lead">The rules for using Combo Locker, written to be read, not skimmed past.</p>
+      <p class="legal-date">Last updated 13 November 2026 <span class="proto-badge">Draft</span></p>
+
+      <nav class="legal-toc" aria-label="On this page">
+        <a href="#t-short">The short version</a>
+        <a href="#t-fan">A fan site</a>
+        <a href="#t-who">Who can use it</a>
+        <a href="#t-account">Your account</a>
+        <a href="#t-data">Shop data and alerts</a>
+        <a href="#t-use">Using the site fairly</a>
+        <a href="#t-content">Content and ownership</a>
+        <a href="#t-ads">Ads and sponsors</a>
+        <a href="#t-changes">Changes and ending</a>
+        <a href="#t-liability">No guarantees</a>
+        <a href="#t-contact">Contact</a>
+      </nav>
+
+      <section id="t-short">
+        <h2>The short version</h2>
+        <ul>
+          <li>Combo Locker is a free, unofficial fan site. It isn’t made, run or endorsed by Epic Games.</li>
+          <li>You can’t buy anything here. Prices and shop times come from public data and can be wrong or late, so always check in the game.</li>
+          <li>You need to be 13 or older to create an account.</li>
+          <li>Keep your account details safe, and don’t misuse the site.</li>
+          <li>By creating an account or using the site, you agree to these terms and our <a href="?view=privacy" class="view-link" data-view="privacy">Privacy Policy</a>.</li>
+        </ul>
+      </section>
+
+      <section id="t-fan">
+        <h2>A fan site</h2>
+        <p>Fortnite is a trademark of Epic Games, Inc. Combo Locker is not official and is not endorsed by Epic Games. Item names, images and other game content belong to Epic Games and their other owners; we show them under Epic’s fan content policy.</p>
+        <p>Nothing you do here changes your Epic Games account or your in-game locker. Buying items happens only in Fortnite, under Epic’s own terms.</p>
+      </section>
+
+      <section id="t-who">
+        <h2>Who can use it</h2>
+        <p>Anyone can browse the shop and build combos without an account. To create an account you must be at least 13. If you’re under 18 (or the age of adulthood where you live), make sure a parent or guardian is OK with you signing up.</p>
+      </section>
+
+      <section id="t-account">
+        <h2>Your account</h2>
+        <ul>
+          <li>Give a real email address you can access. We use it to sign you in and, if you turn them on, to send wishlist alerts.</li>
+          <li>Keep your password to yourself. You’re responsible for what happens under your account.</li>
+          <li>Tell us through the <a href="?view=contact" class="view-link" data-view="contact">contact form</a> if you think someone else is using it.</li>
+          <li>You can ask us to delete your account at any time.</li>
+        </ul>
+      </section>
+
+      <section id="t-data">
+        <h2>Shop data and alerts</h2>
+        <p>Item details, prices and shop rotations come from fortnite-api.com and our own daily record of the Item Shop. We work to keep them right, but they can be missing, wrong or out of date. “Last seen in the shop” only covers dates since we started recording.</p>
+        <p>Wishlist alerts are a free convenience. An email can arrive late, land in spam, or not be sent at all. Don’t rely on it for an item you can’t risk missing.</p>
+      </section>
+
+      <section id="t-use">
+        <h2>Using the site fairly</h2>
+        <p>Please don’t:</p>
+        <ul>
+          <li>break the law, or use the site to harass, threaten or mislead anyone;</li>
+          <li>try to break into accounts, systems or data that aren’t yours;</li>
+          <li>overload the site, or copy large parts of it with bots or scrapers;</li>
+          <li>send spam or harmful code through the contact form or anywhere else;</li>
+          <li>pretend to be Combo Locker, Epic Games or another person.</li>
+        </ul>
+      </section>
+
+      <section id="t-content">
+        <h2>Content and ownership</h2>
+        <p>The site’s design, code and writing belong to Combo Locker. Game content belongs to Epic Games and its other owners, as above.</p>
+        <p>Your combo names and anything you send us stay yours. You let us store and show them as needed to run the site, for example in your account or in a link you choose to share. Combos you share by link can be opened by anyone who has the link.</p>
+        <p>If you think something on the site infringes your rights, use the contact form and choose “Copyright or legal”.</p>
+      </section>
+
+      <section id="t-ads">
+        <h2>Ads and sponsors</h2>
+        <p>Combo Locker is free and is paid for by ads and sponsorships. Ads are marked as ads. We aren’t responsible for other companies’ sites, products or offers, including ones you reach through an ad or link.</p>
+      </section>
+
+      <section id="t-changes">
+        <h2>Changes and ending</h2>
+        <p>We may change, pause or stop any part of the site, including alerts, at any time. We may also suspend or close an account that breaks these terms. If we update these terms, we’ll change the date at the top; for big changes we’ll tell account holders by email or on the site first. Using the site after a change means you accept the new terms.</p>
+      </section>
+
+      <section id="t-liability">
+        <h2>No guarantees</h2>
+        <p>The site is provided “as is”, without promises that it will always be available, accurate or free of errors. As far as the law allows, Combo Locker isn’t liable for losses caused by using the site or relying on its data, such as missing an item in the shop. Nothing in these terms takes away rights you have by law that can’t be waived.</p>
+      </section>
+
+      <section id="t-contact">
+        <h2>Contact</h2>
+        <p>Questions about these terms? Use the <a href="?view=contact" class="view-link" data-view="contact">contact form</a>.</p>
+      </section>
+    </article>
+  </main>
+
+  <!-- ========== Page not found (404) ========== -->
+  <main id="view-notfound" class="view hidden">
+    <section class="notfound">
+      <p class="nf-code" aria-hidden="true">404</p>
+      <p class="eyebrow">Page not found</p>
+      <h1>This one’s not in the locker.</h1>
+      <p class="lead">The page you’re looking for doesn’t exist, or it has moved. Check the address, or head back to the good stuff.</p>
+      <div class="nf-actions">
+        <a href="?view=shop" class="btn-primary view-link" data-view="shop">Go to the item shop <img src="assets/icons/arrow-dark-2.svg" width="18" height="18" alt=""></a>
+        <a href="?view=build" class="btn-secondary view-link" data-view="build">Open combo builder</a>
+      </div>
+      <p class="muted small">Followed a broken link on this site? <a href="?view=contact" class="view-link" data-view="contact">Let us know</a> and we’ll fix it.</p>
+    </section>
+  </main>
+
+  <!-- ========== Cookie consent ========== -->
+  <section class="consent hidden" id="consent" aria-labelledby="consent-title">
+    <div class="consent-in">
+      <div class="consent-text">
+        <h2 id="consent-title">Your privacy, your call.</h2>
+        <p>We store your favorites, wishlist and combos in your browser so the site works. With your OK, we’d also use cookies to count visits and personalize ads. <a href="?view=privacy" class="view-link" data-view="privacy">Privacy Policy</a></p>
+      </div>
+      <div class="consent-opts hidden" id="consent-opts">
+        <label class="consent-opt">
+          <span><strong>Essential</strong><small>Keeps your locker and sign-in working. Always on.</small></span>
+          <input type="checkbox" class="switch" checked disabled>
+        </label>
+        <label class="consent-opt">
+          <span><strong>Analytics</strong><small>Counts visits and which pages are used.</small></span>
+          <input type="checkbox" class="switch" id="consent-analytics" role="switch">
+        </label>
+        <label class="consent-opt">
+          <span><strong>Personalized ads</strong><small>Ads based on your activity. Off means you may still see ads, just not tailored ones.</small></span>
+          <input type="checkbox" class="switch" id="consent-ads" role="switch">
+        </label>
+      </div>
+      <div class="consent-actions">
+        <button type="button" class="text-btn" id="consent-manage">Customize</button>
+        <button type="button" class="btn-primary" id="consent-reject">Reject all</button>
+        <button type="button" class="btn-primary" id="consent-accept">Accept all</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <footer class="footer">
+    <div class="footer-in">
+      <div>
+        <div class="footer-brand">combo locker</div>
+        <p>Fortnite is a trademark of Epic Games, Inc. This site is not official and is not endorsed by Epic Games.</p>
+        <p>Item data and images from <a href="https://fortnite-api.com" target="_blank" rel="noopener">fortnite-api.com</a> <span id="data-date"></span>.</p>
+      </div>
+      <nav class="footer-links" aria-label="Footer">
+        <a href="#" class="soon">View Archive</a>
+        <a href="?view=privacy" class="view-link" data-view="privacy">Privacy</a>
+        <a href="?view=terms" class="view-link" data-view="terms">Terms</a>
+        <a href="#" class="consent-link">Cookie settings</a>
+        <a href="?view=contact" class="view-link" data-view="contact">Feedback</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script src="app.js" type="module"></script>
+</body>
+</html>

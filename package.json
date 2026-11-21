@@ -1,0 +1,13 @@
+{
+  "name": "combo-locker",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "build": "node scripts/build-site.mjs",
+    "data": "node scripts/build-data.mjs",
+    "shop": "node scripts/record-shop.mjs",
+    "alerts": "node scripts/send-alerts.mjs",
+    "daily": "node scripts/record-shop.mjs && node scripts/send-alerts.mjs"
+  }
+}

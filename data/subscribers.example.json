@@ -1,0 +1,18 @@
+[
+  {
+    "email": "player@example.com",
+    "timeZone": "America/New_York",
+    "wishlist": [
+      "Character_AcidWhale",
+      "Pickaxe_AcidWhale",
+      "CID_349_Athena_Commando_M_Banana"
+    ]
+  },
+  {
+    "email": "friend@example.com",
+    "timeZone": "Europe/London",
+    "wishlist": [
+      "CID_349_Athena_Commando_M_Banana"
+    ]
+  }
+]

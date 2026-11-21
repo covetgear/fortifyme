@@ -1,0 +1,9 @@
+node_modules/
+out/
+# Vercel build output (npm run build) and local Vercel link
+public/
+.vercel/
+.env*
+# Real subscriber emails and send log: private, never commit
+data/subscribers.json
+data/alerts-sent.json

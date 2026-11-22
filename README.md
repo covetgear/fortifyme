@@ -83,6 +83,29 @@ Shared combo links look like `/?view=build&outfit=<id>&pickaxe=<id>`. Posted in 
 - The page's title, description and picture tags come from `lib/page.mjs`, used by `server.mjs` locally and `api/page.js` on Vercel. **Previews only work on a public address** (the Vercel URL works). Set `SITE_URL` to the public address.
 - On phones the Share button opens the system share sheet; elsewhere it copies the link. Older `#outfit=...` links still open in the builder but have no preview.
 
+## Ads and the ad-free subscription
+
+Both are **off** until switched on in `config.js`.
+
+**Ads (Google AdSense).** Two placements: Shop (below the featured tiles) and Build (below the item browser).
+- The AdSense script loads only after the sign-in check, and never for ad-free subscribers (it isn't hidden, it's never added).
+- Ads are non-personalized unless the visitor allows personalized ads in the cookie banner (and sends no Global Privacy Control signal).
+- To turn on (after AdSense approves fortifyme.gg): set `ADSENSE_CLIENT` (`ca-pub-…`) and the `AD_SLOTS` unit IDs, then push. The build writes `/ads.txt` automatically.
+- In AdSense > Privacy & messaging, publish Google's **European regulations** message (required for EEA/UK/Switzerland visitors; our banner isn't a Google-certified consent tool).
+
+**Subscription (Stripe).** "Go ad-free" panel in My account; signed-in accounts with a confirmed email only.
+- `billing` Edge Function: starts Stripe Checkout or opens the Customer Portal.
+- `stripe-webhook` Edge Function: Stripe tells it about payments and cancellations; it updates `public.subscriptions` (one row per account, readable only by its owner).
+- Ad-free while the Stripe status is `active`, `trialing` or `past_due` (Stripe still retrying a card).
+- **Deleting an account in Supabase doesn't cancel its Stripe subscription.** Cancel it in Stripe first.
+
+Stripe setup (do it all in **test mode** first, then repeat in live mode):
+1. Product catalog > Add product "Ad-free" with two recurring prices matching `PLANS` in `config.js` ($2.99 monthly, $24.99 yearly). Copy both price IDs (`price_…`).
+2. Settings > Billing > Customer portal: allow canceling, updating the payment method and viewing invoices. Save.
+3. Developers > Webhooks > Add endpoint: `https://zirktoidxwdivbztzyhg.supabase.co/functions/v1/stripe-webhook`, events `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`. Copy the signing secret (`whsec_…`).
+4. Supabase > Edge Functions > Secrets: `STRIPE_SECRET_KEY` (`sk_test_…`, later `sk_live_…`), `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_MONTHLY`, `STRIPE_PRICE_YEARLY`, `SITE_URL`. Optional: `STRIPE_TAX=on` once Stripe Tax is set up.
+5. Set `BILLING_ENABLED = true` in `config.js` and push. Test with card `4242 4242 4242 4242`, any future date, any CVC.
+
 ## Setup you need to do
 
 1. **Resend** ([resend.com](https://resend.com), free: 3,000 emails/month, 100/day): create an account, add and verify your domain, create an API key.

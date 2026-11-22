@@ -54,6 +54,11 @@
 
     <section class="featured" id="featured"></section>
 
+    <aside class="ad-slot hidden" data-ad="shop" aria-label="Advertisement">
+      <p class="ad-label">Advertisement<a href="?view=account" class="view-link ad-remove hidden" data-view="account">Remove ads</a></p>
+      <div class="ad-box"></div>
+    </aside>
+
     <section class="browse">
       <div class="browse-head">
         <h2>Browse collections</h2>
@@ -185,6 +190,11 @@
         </div>
       </section>
     </div>
+
+    <aside class="ad-slot hidden" data-ad="build" aria-label="Advertisement">
+      <p class="ad-label">Advertisement<a href="?view=account" class="view-link ad-remove hidden" data-view="account">Remove ads</a></p>
+      <div class="ad-box"></div>
+    </aside>
   </main>
 
   <!-- ========== My account ========== -->
@@ -225,6 +235,16 @@
       </div>
 
       <aside class="account-side">
+        <section id="adfree-section" class="hidden">
+          <div class="block-head"><h2>Go ad-free</h2></div>
+          <div class="panel adfree">
+            <h3 id="adfree-title">Hide every ad.</h3>
+            <p class="muted" id="adfree-text">Browse without ads on every device you log in to, and help keep Combo Locker running. Every feature stays free either way.</p>
+            <div class="adfree-plans" id="adfree-plans"></div>
+            <button id="btn-billing-portal" class="btn-secondary wide hidden">Manage subscription</button>
+            <p class="muted xsmall adfree-fine">Secure payment by Stripe. Cancel anytime; you keep ad-free until the end of the period you paid for. Under 18? Ask a parent or guardian first.</p>
+          </div>
+        </section>
         <section>
           <div class="block-head"><h2>Wishlist email alerts</h2></div>
           <div class="panel alerts">
@@ -516,7 +536,8 @@
           <li><strong>Hosting</strong>: serves the website.</li>
           <li><strong>Database and sign-in</strong>: stores your account and locker.</li>
           <li><strong>Email delivery</strong>: sends alert and account emails.</li>
-          <li><strong>Advertising partner</strong>: shows ads, personalized only if you allow it.</li>
+          <li><strong>Advertising partner</strong> (Google AdSense): shows ads, personalized only if you allow it. Ad-free subscribers aren’t sent to it at all.</li>
+          <li><strong>Payments</strong> (Stripe): handles ad-free subscription payments. We never see or store your full card number; we keep only your subscription status and Stripe’s customer reference.</li>
         </ul>
         <p>Item images load from fortnite-api.com and the site font loads from Google Fonts, so those services receive your IP address when pages load. We may also share information if the law requires it.</p>
       </section>
@@ -531,6 +552,7 @@
         <ul>
           <li>Account and locker: until you delete your account.</li>
           <li>Contact messages: up to 12 months.</li>
+          <li>Subscription and payment records: as long as tax and accounting law requires (often up to 7 years), even after you delete your account.</li>
           <li>Record of alerts sent: up to 12 months, so we don’t email you twice for the same shop appearance.</li>
           <li>Server logs: up to 30 days.</li>
         </ul>
@@ -572,6 +594,7 @@
         <a href="#t-use">Using the site fairly</a>
         <a href="#t-content">Content and ownership</a>
         <a href="#t-ads">Ads and sponsors</a>
+        <a href="#t-subscription">Ad-free subscription</a>
         <a href="#t-changes">Changes and ending</a>
         <a href="#t-liability">No guarantees</a>
         <a href="#t-contact">Contact</a>
@@ -581,7 +604,8 @@
         <h2>The short version</h2>
         <ul>
           <li>Combo Locker is a free, unofficial fan site. It isn’t made, run or endorsed by Epic Games.</li>
-          <li>You can’t buy anything here. Prices and shop times come from public data and can be wrong or late, so always check in the game.</li>
+          <li>You can’t buy game items here. Prices and shop times come from public data and can be wrong or late, so always check in the game.</li>
+          <li>Every feature is free. The only thing for sale is an optional subscription that hides ads.</li>
           <li>You need to be 13 or older to create an account.</li>
           <li>Keep your account details safe, and don’t misuse the site.</li>
           <li>By creating an account or using the site, you agree to these terms and our <a href="?view=privacy" class="view-link" data-view="privacy">Privacy Policy</a>.</li>
@@ -637,6 +661,18 @@
       <section id="t-ads">
         <h2>Ads and sponsors</h2>
         <p>Combo Locker is free and is paid for by ads and sponsorships. Ads are marked as ads. We aren’t responsible for other companies’ sites, products or offers, including ones you reach through an ad or link.</p>
+      </section>
+
+      <section id="t-subscription">
+        <h2>Ad-free subscription</h2>
+        <ul>
+          <li>The subscription only hides ads. It doesn’t unlock features, items or anything in Fortnite.</li>
+          <li>You need an account with a confirmed email. To pay you must be 18 or older, or have a parent or guardian’s permission and help.</li>
+          <li>It renews automatically each month or year until you cancel. Cancel anytime in My account → Manage subscription; you stay ad-free until the end of the period you’ve paid for.</li>
+          <li>Payments are handled by Stripe. Prices are shown before you pay and may include tax where required.</li>
+          <li>Refunds: if something went wrong, use the contact form within 14 days of a charge. Where the law gives you a right to cancel and get your money back, we follow it.</li>
+          <li>If we change the price, we’ll tell you by email before your next renewal. If we stop the subscription or the site, we’ll refund the unused part of any yearly plan.</li>
+        </ul>
       </section>
 
       <section id="t-changes">

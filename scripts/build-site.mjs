@@ -4,7 +4,7 @@
 // Run locally to check: npm run build
 import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { previewTags, renderPage } from '../lib/page.mjs';
-import { SUPABASE_URL } from '../config.js';
+import { SUPABASE_URL, ADSENSE_CLIENT } from '../config.js';
 
 const root = new URL('../', import.meta.url);
 const out = new URL('public/', root);
@@ -18,4 +18,10 @@ const site = (process.env.SITE_URL || (process.env.VERCEL_URL ? `https://${proce
 const html = await readFile(new URL('index.html', root), 'utf8');
 const tags = await previewTags({ params: new URLSearchParams(), pageUrl: `${site}/`, supabaseUrl: SUPABASE_URL, nameOf: async () => null });
 await writeFile(new URL('404.html', out), renderPage(html, tags, 404));
+
+// AdSense requires /ads.txt naming the site's publisher ID.
+if (ADSENSE_CLIENT) {
+  const pub = ADSENSE_CLIENT.replace(/^ca-/, '');
+  await writeFile(new URL('ads.txt', out), `google.com, ${pub}, DIRECT, f08c47fec0942fa0\n`);
+}
 console.log(`Built public/ (${FILES.length} entries + 404.html)`);

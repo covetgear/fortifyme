@@ -4,7 +4,7 @@
 // Layout follows the Figma "Fortnite Locker" designs (Item shop, Combo builder, Item detail pop-up, My account,
 // Sign up, Log in). Privacy page and cookie banner have no Figma frame and reuse the same styles.
 import { itemFacts, timeLeft, leavesAt } from './lib/alert-email.js';
-import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
+import { SUPABASE_URL, SUPABASE_KEY, ADSENSE_CLIENT, AD_SLOTS, BILLING_ENABLED, PLANS } from './config.js';
 
 const ICON = (name) => `assets/icons/${name}.svg`;
 const SLOTS = [
@@ -858,6 +858,7 @@ function mergeCombos(remote, local) {
 async function onSignedIn(user) {
   store.account = { id: user.id, email: user.email };
   syncAuth();
+  subscriptionCheck = refreshSubscription();
   const { data, error } = await sb.from('lockers').select('likes,wishlist,combos,alerts_on,time_zone').eq('user_id', user.id).maybeSingle();
   if (error) {
     toast('Couldn’t load your locker. Check your connection and refresh.');
@@ -885,6 +886,8 @@ function onSignedOut() {
   Object.assign(store, { account: null, owner: null, likes: [], wishlist: [], combos: [], alerts: null });
   saveStore();
   syncAuth();
+  subscription = null;
+  if (adFree) setAdFree(false);
   refreshMarks();
   if (isOn('account') || isOn('reset')) showView('shop');
 }
@@ -1078,6 +1081,128 @@ async function logOut() {
   toast('Logged out. Your locker is saved to your account.');
 }
 
+// ================= Ads and the ad-free subscription =================
+// Ads load only when config.js has an AdSense ID, and never for ad-free subscribers: the AdSense
+// script isn't added at all for them (hiding ads that were loaded would break AdSense policy).
+// We wait for the sign-in check first, and remember the answer so subscribers don't see a flash of ads.
+const AD_FREE_KEY = 'comboLocker.adFree';
+const AD_FREE_STATUSES = ['active', 'trialing', 'past_due']; // past_due: Stripe is still retrying the card
+let adFree = (() => { try { return BILLING_ENABLED && localStorage.getItem(AD_FREE_KEY) === '1'; } catch { return false; } })();
+let subscription = null; // the account's row in public.subscriptions
+let subscriptionCheck = Promise.resolve();
+let adsLoaded = false;
+
+function setAdFree(on) {
+  adFree = on;
+  try { on ? localStorage.setItem(AD_FREE_KEY, '1') : localStorage.removeItem(AD_FREE_KEY); } catch {}
+  document.body.classList.toggle('ad-free', on);
+  if (on) document.querySelectorAll('.ad-slot').forEach((s) => { s.classList.add('hidden'); s.querySelector('.ad-box').replaceChildren(); });
+  else if (authSettled) maybeLoadAds();
+}
+
+async function refreshSubscription() {
+  if (!BILLING_ENABLED || !sb || !store.account) return;
+  const { data, error } = await sb.from('subscriptions')
+    .select('status,current_period_end,cancel_at_period_end').eq('user_id', store.account.id).maybeSingle();
+  if (error) return; // keep the remembered answer
+  subscription = data;
+  setAdFree(!!data && AD_FREE_STATUSES.includes(data.status));
+  if (isOn('account')) renderBilling();
+}
+
+function maybeLoadAds() {
+  if (!ADSENSE_CLIENT || adFree || adsLoaded) return;
+  adsLoaded = true;
+  // Personalized ads only with a "yes" in the cookie banner (and no Global Privacy Control signal).
+  // In the EEA, UK and Switzerland, Google's own consent message (set up in AdSense) also applies.
+  (window.adsbygoogle = window.adsbygoogle || []).requestNonPersonalizedAds = window.comboConsent().ads ? 0 : 1;
+  document.head.append(el('script', {
+    async: true, crossOrigin: 'anonymous',
+    src: `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${encodeURIComponent(ADSENSE_CLIENT)}`,
+  }));
+  fillAds();
+}
+
+// Adds an ad unit to each slot on the page being shown (AdSense can't fill a hidden slot).
+function fillAds() {
+  if (!adsLoaded || adFree) return;
+  for (const slot of document.querySelectorAll('.ad-slot')) {
+    const id = AD_SLOTS[slot.dataset.ad];
+    if (!id || slot.closest('.view.hidden')) continue;
+    slot.classList.remove('hidden');
+    slot.querySelector('.ad-remove').classList.toggle('hidden', !BILLING_ENABLED);
+    const box = slot.querySelector('.ad-box');
+    if (box.firstChild) continue;
+    const ins = el('ins', { className: 'adsbygoogle' });
+    Object.assign(ins.dataset, { adClient: ADSENSE_CLIENT, adSlot: id, adFormat: 'auto', fullWidthResponsive: 'true' });
+    ins.style.display = 'block';
+    box.append(ins);
+    try { window.adsbygoogle.push({}); } catch (e) { console.warn('Ad slot:', e); }
+  }
+}
+
+const fmtDay = (iso) => new Date(iso).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' });
+
+function renderBilling() {
+  $('#adfree-section').classList.toggle('hidden', !BILLING_ENABLED);
+  if (!BILLING_ENABLED) return;
+  const s = subscription;
+  const active = !!s && AD_FREE_STATUSES.includes(s.status);
+  $('#adfree-title').textContent = active ? 'You’re ad-free.' : 'Hide every ad.';
+  $('#adfree-text').textContent = !active
+    ? 'Browse without ads on every device you log in to, and help keep Combo Locker running. Every feature stays free either way.'
+    : s.status === 'past_due' ? 'Your last payment didn’t go through. Update your card under Manage subscription to stay ad-free.'
+    : s.cancel_at_period_end && s.current_period_end ? `Canceled. You stay ad-free until ${fmtDay(s.current_period_end)}.`
+    : s.current_period_end ? `Thanks for supporting the site! Renews on ${fmtDay(s.current_period_end)}.`
+    : 'Thanks for supporting the site!';
+  const plans = $('#adfree-plans');
+  plans.classList.toggle('hidden', active);
+  if (!plans.firstChild) {
+    for (const [key, p] of Object.entries(PLANS)) {
+      plans.append(el('button', { className: key === 'monthly' ? 'btn-primary wide' : 'btn-secondary wide', onclick: (e) => startBilling(e.currentTarget, 'checkout', key) },
+        `${p.label} · ${p.price}`, el('span', { className: 'per', textContent: p.per })));
+    }
+  }
+  // Anyone who has been a customer can see invoices or resubscribe through the portal.
+  $('#btn-billing-portal').classList.toggle('hidden', !s || s.status === 'none');
+}
+
+async function startBilling(btn, action, plan) {
+  const { data } = (await sb?.auth.getSession()) ?? {};
+  const token = data?.session?.access_token;
+  if (!token) return showView('login');
+  btn.disabled = true;
+  try {
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/billing`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, apikey: SUPABASE_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action, plan }),
+    });
+    const out = await res.json().catch(() => ({}));
+    if (out.url) { location.href = out.url; return; } // off to Stripe
+    toast(out.error || 'Billing is unavailable right now. Try again later.');
+  } catch {
+    toast('Couldn’t reach billing. Check your connection.');
+  }
+  btn.disabled = false;
+}
+
+// Back from Stripe Checkout (?billing=success|cancel). The webhook can take a few seconds,
+// so check the subscription a few times before giving up.
+async function billingReturn(result) {
+  const params = new URLSearchParams(location.search);
+  params.delete('billing');
+  history.replaceState(null, '', `${location.pathname}?${params}${location.hash}`);
+  if (result === 'cancel') return toast('Checkout canceled. Nothing was charged.');
+  if (result !== 'success') return;
+  toast('Thanks! Turning off ads…');
+  for (let i = 0; i < 8 && !adFree; i++) {
+    await new Promise((r) => setTimeout(r, 2000));
+    await refreshSubscription();
+  }
+  toast(adFree ? 'You’re ad-free. Thanks for supporting the site!' : 'Payment received. Ads will turn off in a minute; refresh if they don’t.');
+}
+
 // ================= Cookie consent =================
 // Essential storage (the locker, the consent choice, sign-in) is always on. Analytics and
 // personalized ads must wait for a "yes": future loaders should check window.comboConsent()
@@ -1139,7 +1264,8 @@ function showView(name) {
   }
   document.querySelectorAll('.nav-btn').forEach((b) => b.classList.toggle('active', b.dataset.view === name));
   for (const v of VIEWS) $(`#view-${v}`).classList.toggle('hidden', v !== name);
-  if (name === 'account') renderAccount();
+  fillAds();
+  if (name === 'account') { renderAccount(); renderBilling(); }
   else if (name === 'shop') renderShop();
   else if (name === 'build') renderStage();
   else if (name === 'contact' && !$('#contact-email').value && store.alerts?.email) $('#contact-email').value = store.alerts.email;
@@ -1258,6 +1384,8 @@ function wire() {
 
   // Account
   // Alerts always go to the account's own (confirmed) email. Saved straight to the account.
+  $('#btn-billing-portal').onclick = (e) => startBilling(e.currentTarget, 'portal');
+
   $('#btn-alert-save').onclick = async (e) => {
     if (!store.account || !sb) return;
     const on = $('#alert-on').checked;
@@ -1306,6 +1434,14 @@ async function init() {
   const landing = badPath || (requested && !VIEWS.includes(requested)) ? 'notfound'
     : VIEWS.includes(requested) ? requested : location.hash.includes('=') ? 'build' : 'shop';
   if (landing === 'notfound') showView('notfound');
+
+  // Ads wait for the sign-in and subscription check, so subscribers never get the ad code.
+  document.body.classList.toggle('ad-free', adFree);
+  const billingResult = params.get('billing');
+  authDone.then(() => subscriptionCheck).then(() => {
+    maybeLoadAds();
+    if (billingResult) billingReturn(billingResult);
+  });
   if (landing === 'alerts-off' && params.get('bad')) {
     $('#alerts-off-title').textContent = 'That link didn’t work.';
     $('#alerts-off-text').textContent = 'It may be old or already used. Log in and switch off wishlist alerts in My account instead.';

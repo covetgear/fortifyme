@@ -531,6 +531,25 @@ select option { background: var(--panel); color: var(--text); }
 .switch::after { content: ""; position: absolute; left: 4px; top: 4px; width: 18px; height: 18px; border-radius: 50%; background: #b8beca; transition: transform .15s, background .15s; }
 .switch:checked { background: var(--accent); }
 .switch:checked::after { transform: translateX(20px); background: var(--accent-ink); }
+.adfree { padding: 23px; }
+.adfree h3 { font-size: 22px; font-weight: 700; }
+.adfree > p.muted { margin-top: 10px; }
+.adfree-plans { display: grid; gap: 10px; margin-top: 22px; }
+.adfree-plans .per { opacity: .7; font-weight: 500; }
+#btn-billing-portal { margin-top: 22px; }
+.adfree-plans:not(.hidden) + #btn-billing-portal { margin-top: 10px; }
+.adfree-fine { margin-top: 14px; }
+#adfree-section { margin-bottom: 28px; }
+
+/* Ad slots: fixed minimum height so the page doesn't jump when an ad loads. */
+.ad-slot { margin: 0 0 24px; }
+#view-build > .ad-slot { margin: 0 0 48px; }
+.ad-label { display: flex; justify-content: space-between; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+.ad-label .ad-remove { color: var(--accent); text-transform: none; letter-spacing: 0; font-size: 12px; }
+.ad-box { min-height: 100px; border-radius: 12px; overflow: hidden; background: var(--deep); }
+@media (min-width: 768px) { .ad-box { min-height: 250px; } }
+.ad-free .ad-slot { display: none !important; }
+
 .notice { padding: 19px 23px 22px; background: #11151b; }
 .notice h3 { margin-top: 10px; font-size: 17px; font-weight: 600; }
 .notice #check-text { margin-top: 8px; }

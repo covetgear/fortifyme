@@ -55,8 +55,8 @@ Deno.serve(async (req) => {
 
   const brand = (
     <div style={{ display: 'flex', alignItems: 'center' }}>
-      <div style={{ display: 'flex', width: 46, height: 46, borderRadius: 12, background: '#d7fb76', color: '#0b0d12', fontSize: 20, fontWeight: 800, alignItems: 'center', justifyContent: 'center' }}>CL</div>
-      <div style={{ display: 'flex', marginLeft: 14, fontSize: 28, fontWeight: 700, color: '#f5f6fa' }}>combo locker</div>
+      <div style={{ display: 'flex', width: 46, height: 46, borderRadius: 12, background: '#d7fb76', color: '#0b0d12', fontSize: 20, fontWeight: 800, alignItems: 'center', justifyContent: 'center' }}>FM</div>
+      <div style={{ display: 'flex', marginLeft: 14, fontSize: 28, fontWeight: 700, color: '#f5f6fa' }}>FortifyMe</div>
     </div>
   );
 
@@ -87,7 +87,7 @@ Deno.serve(async (req) => {
               <div style={{ display: 'flex', marginTop: 2, fontSize: 14, fontWeight: 500, color: '#969caa' }}>{i.label}</div>
             </div>
           ))}
-          {!rest.length && <div style={{ display: 'flex', fontSize: 26, fontWeight: 500, color: '#969caa' }}>Mix it with your favorite pieces on Combo Locker.</div>}
+          {!rest.length && <div style={{ display: 'flex', fontSize: 26, fontWeight: 500, color: '#969caa' }}>Mix it with your favorite pieces on FortifyMe.</div>}
         </div>
       </div>
     </div>

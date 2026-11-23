@@ -5,7 +5,7 @@
 // Each item alerts once per shop listing (public.alerts_sent), so re-running is safe.
 //
 // Sending needs two Edge Function secrets: RESEND_API_KEY and ALERT_FROM
-// (e.g. "Combo Locker <alerts@yourdomain.com>", on a domain verified in Resend).
+// (e.g. "FortifyMe <alerts@yourdomain.com>", on a domain verified in Resend).
 // Without them it does a dry run: counts what it would send, sends nothing, logs nothing.
 // Optional secrets: SITE_URL (links in the email), ALERT_DAILY_CAP (default 100, Resend's free daily limit).
 //

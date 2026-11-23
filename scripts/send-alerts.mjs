@@ -5,7 +5,7 @@
 // Subscribers come from data/subscribers.json (falls back to data/subscribers.example.json).
 // In the real site this list comes from the database (accounts with alerts turned on).
 //
-// Sending: set RESEND_API_KEY and ALERT_FROM (e.g. "Combo Locker <alerts@yourdomain.com>")
+// Sending: set RESEND_API_KEY and ALERT_FROM (e.g. "FortifyMe <alerts@yourdomain.com>")
 // to send through Resend (resend.com). Without them, emails are written to out/emails/ as
 // previews and nothing is sent.
 import { readFile, writeFile, mkdir } from 'node:fs/promises';

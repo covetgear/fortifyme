@@ -1,4 +1,4 @@
-// Combo Locker prototype. Catalog comes from data/cosmetics.json (built by scripts/build-data.mjs).
+// FortifyMe prototype. Catalog comes from data/cosmetics.json (built by scripts/build-data.mjs).
 // Favorites, wishlist and saved combos live in localStorage as a stand-in for real accounts.
 // Today's shop comes from data/shop.json (built by scripts/record-shop.mjs).
 // Layout follows the Figma "Fortnite Locker" designs (Item shop, Combo builder, Item detail pop-up, My account,
@@ -767,7 +767,7 @@ function renderAlerts(wish) {
 // Prototype only: there is no server-side account yet. "Signing in" just remembers the email in
 // localStorage; the real site will use Supabase Auth (passwords never touch our own code).
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const GUEST = { signup: ['Already have an account?', 'Log in', 'login'], login: ['New to Combo Locker?', 'Sign up', 'signup'] };
+const GUEST = { signup: ['Already have an account?', 'Log in', 'login'], login: ['New to FortifyMe?', 'Sign up', 'signup'] };
 const SIGNUP_PREVIEWS = [ // fixed artwork backgrounds from the Figma sign-up frame
   ['CID_844_Athena_Commando_F_HightowerMango', '#214c59'],
   ['Character_OpenEnded', '#2a3245'],
@@ -1150,7 +1150,7 @@ function renderBilling() {
   const active = !!s && AD_FREE_STATUSES.includes(s.status);
   $('#adfree-title').textContent = active ? 'You’re ad-free.' : 'Hide every ad.';
   $('#adfree-text').textContent = !active
-    ? 'Browse without ads on every device you log in to, and help keep Combo Locker running. Every feature stays free either way.'
+    ? 'Browse without ads on every device you log in to, and help keep FortifyMe running. Every feature stays free either way.'
     : s.status === 'past_due' ? 'Your last payment didn’t go through. Update your card under Manage subscription to stay ad-free.'
     : s.cancel_at_period_end && s.current_period_end ? `Canceled. You stay ad-free until ${fmtDay(s.current_period_end)}.`
     : s.current_period_end ? `Thanks for supporting the site! Renews on ${fmtDay(s.current_period_end)}.`

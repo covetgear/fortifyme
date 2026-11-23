@@ -1,4 +1,4 @@
-# Combo Locker
+# FortifyMe
 
 Fan-made Fortnite combo builder: browse the daily Item Shop, build a six-piece combo (outfit, back bling, pickaxe, glider, sidekick, vehicle), then favorite, wishlist, save and share it. Layout follows the Figma "Fortnite Locker" designs; icons are in assets/icons/.
 
@@ -61,13 +61,13 @@ When a wishlisted item appears in the shop, the subscriber gets one email with:
 2. its price in V-Bucks (and the normal price if discounted, or the bundle it's in)
 3. the last time it was in the shop
 
-**Live sender:** the `send-alerts` Edge Function (copy in `supabase/functions/send-alerts/`) runs daily at 00:30 UTC, 20 minutes after the shop is recorded, with a retry at 06:30 UTC.
+**Live sender:** the `send-alerts` Edge Function (copy in `supabase/functions/send-alerts/`) runs every hour at :20 (the first run after the 00:00 UTC reset is 00:20, ten minutes after the shop is recorded), so mid-day shop drops are caught too. Each item is emailed once per shop listing, so repeated runs never send duplicates.
 
 - Who gets one: accounts with alerts on, a confirmed email, and a wishlisted item in today's shop (`public.alert_subscribers()`).
 - Each item alerts once per shop listing, logged in `public.alerts_sent`; re-running never double-sends.
 - Every email has a one-click "Turn off wishlist alerts" link plus the `List-Unsubscribe` header (Gmail and Yahoo require it for bulk senders). The `unsubscribe` function turns alerts off and sends people to `?view=alerts-off`.
 - Until `RESEND_API_KEY` and `ALERT_FROM` are set it's a **dry run**: it counts what it would send and sends nothing. See recent runs in the SQL editor: `select status_code, content from net._http_response order by created desc limit 5;`
-- Sends stop at `ALERT_DAILY_CAP` (default 100, Resend's free daily limit); anyone left over gets theirs at the 06:30 retry.
+- Sends stop at `ALERT_DAILY_CAP` (default 100, Resend's free daily limit); anyone left over gets theirs in a later run.
 - Template preview without sending: `POST /functions/v1/send-alerts?preview=1` with `{"wishlist": ["<item id in today's shop>"], "time_zone": "America/New_York"}`.
 - The template is `lib/alert-email.js`; the function uses a copy (`supabase/functions/send-alerts/alert-email.js`). After editing the template, copy it over and redeploy the function.
 
@@ -109,7 +109,7 @@ Stripe setup (do it all in **test mode** first, then repeat in live mode):
 ## Setup you need to do
 
 1. **Resend** ([resend.com](https://resend.com), free: 3,000 emails/month, 100/day): create an account, add and verify your domain, create an API key.
-2. **Alert emails**: in Supabase > Edge Functions > Secrets, add `RESEND_API_KEY`, `ALERT_FROM` (e.g. `Combo Locker <alerts@yourdomain.com>`) and `SITE_URL` (the site's address; `http://localhost:5173` until launch).
+2. **Alert emails**: in Supabase > Edge Functions > Secrets, add `RESEND_API_KEY`, `ALERT_FROM` (e.g. `FortifyMe <alerts@yourdomain.com>`) and `SITE_URL` (the site's address; `http://localhost:5173` until launch).
 3. **Sign-up and password emails**: in Supabase > Authentication > Emails > SMTP settings, turn on custom SMTP with Resend: host `smtp.resend.com`, port `465`, user `resend`, password = the API key, sender = an address on your verified domain. Until then Supabase only emails members of your Supabase team.
 4. **Redirect links**: in Supabase > Authentication > URL Configuration, set Site URL to `http://localhost:5173` (your real address at launch) and add `http://localhost:5173/**` (later also `https://yourdomain/**`) to Redirect URLs. Otherwise confirmation and reset links land on the wrong page.
 5. **Password rule** (recommended): Authentication > Providers > Email > minimum password length 12, so the server enforces it too.

@@ -27,7 +27,7 @@ No framework and no packages; `vercel.json` has everything:
 - **`/`** → `api/page.js`: `index.html` plus share-preview tags for combo links. Cached on the CDN for an hour; each deploy clears it.
 - **`/api/shop`**: today's shop from fortnite-api.com, with "last seen" dates from the Supabase history (`public.shop_last_seen`). Cached until just after the 00:00 UTC reset.
 - **`/api/cosmetics`**: the catalog, rebuilt from fortnite-api.com every 6 hours, so new items appear without a redeploy.
-- **`/api/contact`**: stores Contact form messages in Supabase, table `public.contact_messages` (read them in Table editor). The `submit_contact` function re-checks every field and caps the site at 100 messages an hour.
+- **`/api/contact`**: stores Contact form messages in Supabase, table `public.contact_messages` (read them in Table editor). The `submit_contact` function re-checks every field and caps the site at 100 messages an hour. A trigger then calls the `notify-contact` Edge Function, which emails each message once to the `CONTACT_TO` secret (Reply-To is the sender, so you can answer from your inbox). Without `CONTACT_TO` nothing is emailed; messages are still saved.
 - **Environment variable:** `SITE_URL` (e.g. `https://fortifyme.gg`) once the domain is connected. Until then preview links use the Vercel address.
 
 Setting up: import the GitHub repo in Vercel (Add New → Project), leave every setting at its default (vercel.json overrides them), deploy. Connect the domain only at launch.

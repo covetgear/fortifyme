@@ -31,6 +31,7 @@ const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SITE_URL = (Deno.env.get('SITE_URL') || 'http://localhost:5173').replace(/\/+$/, '');
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
 const ALERT_FROM = Deno.env.get('ALERT_FROM');
+const REPLY_TO = Deno.env.get('ALERT_REPLY_TO') ?? 'support@fortifyme.gg';
 const LIVE = Boolean(RESEND_API_KEY && ALERT_FROM);
 const DAILY_CAP = Number(Deno.env.get('ALERT_DAILY_CAP') || 100);
 
@@ -119,6 +120,7 @@ Deno.serve(async (req) => {
         headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
           from: ALERT_FROM,
+          reply_to: REPLY_TO,
           to: s.email,
           subject: email.subject,
           html: email.html,

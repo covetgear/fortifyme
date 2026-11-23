@@ -24,6 +24,7 @@ const TYPES = {
   '.json': 'application/json',
   '.svg': 'image/svg+xml',
   '.png': 'image/png',
+  '.ico': 'image/x-icon',
 };
 const SITE_URL = (process.env.SITE_URL || '').replace(/\/+$/, ''); // public address, e.g. https://fortifyme.gg
 

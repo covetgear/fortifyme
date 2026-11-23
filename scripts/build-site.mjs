@@ -8,7 +8,7 @@ import { SUPABASE_URL, ADSENSE_CLIENT } from '../config.js';
 
 const root = new URL('../', import.meta.url);
 const out = new URL('public/', root);
-const FILES = ['app.js', 'config.js', 'styles.css', 'lib/alert-email.js', 'assets', 'data/cosmetics.json', 'data/shop.json'];
+const FILES = ['favicon.ico', 'app.js', 'config.js', 'styles.css', 'lib/alert-email.js', 'assets', 'data/cosmetics.json', 'data/shop.json'];
 
 await rm(out, { recursive: true, force: true });
 await mkdir(out, { recursive: true });

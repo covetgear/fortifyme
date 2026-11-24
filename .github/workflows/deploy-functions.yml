@@ -18,6 +18,6 @@ jobs:
       - uses: actions/checkout@v5
       # The CLI comes from npm (the setup-cli action looks up releases via GitHub's API and gets rate-limited).
       # Each folder is one function. --use-api bundles on Supabase's side (no Docker needed); --yes skips the confirm prompt CI can't answer.
-      # Function settings (verify_jwt) are kept as they are on Supabase.
+      # Each function's verify_jwt comes from supabase/config.toml.
       - name: Deploy functions
         run: npx --yes supabase@latest functions deploy --remote="$PROJECT_REF" --use-api --yes

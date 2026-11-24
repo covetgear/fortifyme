@@ -16,10 +16,8 @@ jobs:
       PROJECT_REF: zirktoidxwdivbztzyhg
     steps:
       - uses: actions/checkout@v5
-      - uses: supabase/setup-cli@v1
-        with:
-          version: latest
+      # The CLI comes from npm (the setup-cli action looks up releases via GitHub's API and gets rate-limited).
       # Each folder is one function. --use-api bundles on Supabase's side (no Docker needed); --yes skips the confirm prompt CI can't answer.
       # Function settings (verify_jwt) are kept as they are on Supabase.
       - name: Deploy functions
-        run: supabase functions deploy --remote="$PROJECT_REF" --use-api --yes
+        run: npx --yes supabase@latest functions deploy --remote="$PROJECT_REF" --use-api --yes

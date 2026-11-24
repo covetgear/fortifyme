@@ -10,6 +10,7 @@ verify_jwt = false
 [functions.unsubscribe]
 verify_jwt = false
 [functions.combo-card]
+entrypoint = "./functions/combo-card/index.tsx"
 verify_jwt = false
 
 # On: called by pg_cron / a database trigger with the anon key as a Bearer token.

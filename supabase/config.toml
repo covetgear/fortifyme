@@ -1,0 +1,21 @@
+# Used by `supabase functions deploy` (see .github/workflows/deploy-functions.yml).
+# Without an entry here, a deploy turns "Verify JWT" ON, so every function's setting is pinned.
+project_id = "zirktoidxwdivbztzyhg"
+
+# Off: called without a Supabase login (browser CORS preflight, Stripe, email links, link previews).
+[functions.billing]
+verify_jwt = false
+[functions.stripe-webhook]
+verify_jwt = false
+[functions.unsubscribe]
+verify_jwt = false
+[functions.combo-card]
+verify_jwt = false
+
+# On: called by pg_cron / a database trigger with the anon key as a Bearer token.
+[functions.record-shop]
+verify_jwt = true
+[functions.send-alerts]
+verify_jwt = true
+[functions.notify-contact]
+verify_jwt = true

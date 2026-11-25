@@ -3,6 +3,26 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Google Tag Manager (GTM-5QFNVL4F) with Consent Mode: analytics and ad storage stay "denied" until
+       the visitor says yes in the cookie banner. The saved choice is applied here, before GTM loads;
+       app.js sends an update when it changes. Keep the storage key in step with CONSENT_KEY in app.js. -->
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    (function () {
+      var c = null;
+      try { c = JSON.parse(localStorage.getItem('comboLocker.consent')); } catch (e) {}
+      if (!c || c.v !== 1) c = {};
+      var ads = c.ads && navigator.globalPrivacyControl !== true ? 'granted' : 'denied';
+      gtag('consent', 'default', {
+        analytics_storage: c.analytics ? 'granted' : 'denied',
+        ad_storage: ads, ad_user_data: ads, ad_personalization: ads,
+      });
+    })();
+    gtag('js', new Date());
+    dataLayer.push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
+  </script>
+  <script async src="https://www.googletagmanager.com/gtm.js?id=GTM-5QFNVL4F"></script>
   <title>FortifyMe</title>
   <link rel="icon" href="/favicon.ico" sizes="32x32">
   <link rel="icon" type="image/png" sizes="512x512" href="/assets/icon-512.png">
@@ -540,10 +560,11 @@
           <li><strong>Hosting</strong>: serves the website.</li>
           <li><strong>Database and sign-in</strong>: stores your account and locker.</li>
           <li><strong>Email delivery</strong>: sends alert and account emails.</li>
+          <li><strong>Analytics</strong> (Google, through Google Tag Manager): counts visits and page use, only if you allow analytics.</li>
           <li><strong>Advertising partner</strong> (Google AdSense): shows ads, personalized only if you allow it. Ad-free subscribers aren’t sent to it at all.</li>
           <li><strong>Payments</strong> (Stripe): handles ad-free subscription payments. We never see or store your full card number; we keep only your subscription status and Stripe’s customer reference.</li>
         </ul>
-        <p>Item images load from fortnite-api.com and the site font loads from Google Fonts, so those services receive your IP address when pages load. We may also share information if the law requires it.</p>
+        <p>Item images load from fortnite-api.com, the site font loads from Google Fonts, and Google Tag Manager loads on every page, so those services receive your IP address when pages load. Google Tag Manager respects your Cookie settings: analytics and ad cookies stay off unless you allow them. We may also share information if the law requires it.</p>
       </section>
 
       <section id="p-kids">

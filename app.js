@@ -1206,7 +1206,8 @@ async function billingReturn(result) {
 // ================= Cookie consent =================
 // Essential storage (the locker, the consent choice, sign-in) is always on. Analytics and
 // personalized ads must wait for a "yes": future loaders should check window.comboConsent()
-// and listen for the "consentchange" event before adding any tag.
+// and listen for the "consentchange" event before adding any tag. Google Tag Manager (index.html)
+// starts with Google Consent Mode set from the saved choice; setConsent() sends Google the update.
 const CONSENT_KEY = 'comboLocker.consent';
 const CONSENT_VERSION = 1;
 const gpc = navigator.globalPrivacyControl === true;
@@ -1224,7 +1225,12 @@ window.comboConsent = () => ({
 function setConsent(analytics, ads) {
   consent = { v: CONSENT_VERSION, analytics, ads, date: new Date().toISOString() };
   try { localStorage.setItem(CONSENT_KEY, JSON.stringify(consent)); } catch {}
-  window.dispatchEvent(new CustomEvent('consentchange', { detail: window.comboConsent() }));
+  const now = window.comboConsent();
+  window.dispatchEvent(new CustomEvent('consentchange', { detail: now }));
+  const ad = now.ads ? 'granted' : 'denied';
+  window.gtag?.('consent', 'update', {
+    analytics_storage: now.analytics ? 'granted' : 'denied', ad_storage: ad, ad_user_data: ad, ad_personalization: ad,
+  });
   $('#consent').classList.add('hidden');
   toast('Cookie choices saved');
 }

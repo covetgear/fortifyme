@@ -55,3 +55,9 @@ export async function GET(request) {
     },
   });
 }
+
+// Some crawlers and link checkers ask with HEAD first: same status and headers, no body.
+export async function HEAD(request) {
+  const res = await GET(request);
+  return new Response(null, { status: res.status, headers: res.headers });
+}

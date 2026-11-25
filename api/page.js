@@ -45,6 +45,8 @@ export async function GET(request) {
   const params = new URLSearchParams(url.search);
   const pathname = params.get('__path') ?? (url.pathname.startsWith('/api/') ? '/' : url.pathname);
   params.delete('__path');
+  // Vercel also passes the rewrite's named match (:page) on as ?page=<path>; it isn't the visitor's.
+  if (params.get('page') === pathname.slice(1)) params.delete('page');
   const { view, redirect } = route(pathname, params);
   if (redirect) {
     return new Response(null, { status: 308, headers: { Location: redirect, 'Cache-Control': 'public, max-age=3600, s-maxage=86400' } });

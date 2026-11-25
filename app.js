@@ -5,6 +5,7 @@
 // Sign up, Log in). Privacy page and cookie banner have no Figma frame and reuse the same styles.
 import { itemFacts, timeLeft, leavesAt } from './lib/alert-email.js';
 import { SUPABASE_URL, SUPABASE_KEY, ADSENSE_CLIENT, AD_SLOTS, BILLING_ENABLED, PLANS } from './config.js';
+import { VIEW_META } from './lib/views.js';
 
 const ICON = (name) => `assets/icons/${name}.svg`;
 const SLOTS = [
@@ -1244,9 +1245,8 @@ function openConsent(manage = false) {
 const VIEWS = ['shop', 'build', 'account', 'contact', 'signup', 'login', 'privacy', 'terms', 'notfound', 'reset', 'alerts-off'];
 // The server marks a missing page (e.g. /shopp) with this meta tag and a 404 status.
 let badPath = !!document.querySelector('meta[name="http-status"][content="404"]');
-const SITE_TITLE = document.title;
 function showView(name) {
-  document.title = name === 'notfound' ? `Page not found · ${SITE_TITLE}` : SITE_TITLE;
+  document.title = VIEW_META[name]?.title ?? document.title;
   // My account (and setting a new password) need a sign-in; come back afterwards.
   if ((name === 'account' || name === 'reset') && !store.account) {
     if (!authSettled) { authDone.then(() => showView(name)); return; } // still checking for a saved session
@@ -1318,7 +1318,7 @@ async function sendContact(ev) {
 function pressToggle(btn, on) { btn.setAttribute('aria-pressed', on); }
 
 function wire() {
-  document.querySelectorAll('.nav-btn').forEach((b) => (b.onclick = () => showView(b.dataset.view)));
+  document.querySelectorAll('.nav-btn').forEach((b) => (b.onclick = (e) => { e.preventDefault(); showView(b.dataset.view); }));
   document.querySelectorAll('.view-link').forEach((a) => (a.onclick = (e) => { e.preventDefault(); showView(a.dataset.view); }));
   document.querySelectorAll('.soon').forEach((a) => (a.onclick = (e) => { e.preventDefault(); toast('Coming soon'); }));
   $('#nav-wishlist').onclick = () => { showView('account'); if (store.account) $('#wishlist-section').scrollIntoView(); };

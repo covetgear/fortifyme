@@ -1,5 +1,5 @@
 // Tiny local server, mirroring the live site on Vercel. Run: node server.mjs
-// - / gets link-preview tags (Open Graph / Twitter) like api/page.js does live.
+// - / gets the page's title, canonical link, preview tags and today's shop like api/page.js does live.
 // - /api/shop and /api/cosmetics run the same code as on Vercel (live data from fortnite-api.com).
 // - POST /api/contact saves each message to out/messages/ (live, api/contact.js stores it in Supabase).
 // - Missing pages get the site with a 404 status, like public/404.html live.
@@ -8,7 +8,7 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { extname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { SUPABASE_URL } from './config.js';
-import { previewTags, renderPage } from './lib/page.mjs';
+import { previewTags, renderPage, viewFor } from './lib/page.mjs';
 import { cleanContact } from './lib/contact.mjs';
 import * as shopApi from './api/shop.js';
 import * as cosmeticsApi from './api/cosmetics.js';
@@ -39,8 +39,14 @@ async function nameOf(_slot, id) {
 
 async function sendPage(res, url, origin, status = 200) {
   const html = await readFile(join(ROOT, 'index.html'), 'utf8');
-  const tags = await previewTags({ params: url.searchParams, pageUrl: `${SITE_URL || origin}${url.pathname}${url.search}`, supabaseUrl: SUPABASE_URL, nameOf });
-  res.writeHead(status, { 'Content-Type': TYPES['.html'] }).end(renderPage(html, tags, status));
+  const view = status === 404 ? null : viewFor(url.searchParams);
+  if (!view) status = 404;
+  const site = SITE_URL || origin;
+  const [tags, shop] = await Promise.all([
+    previewTags({ params: url.searchParams, view: view ?? 'notfound', site, pageUrl: `${site}${url.pathname}${url.search}`, supabaseUrl: SUPABASE_URL, nameOf }),
+    view === 'shop' ? shopApi.GET().then((r) => (r.ok ? r.json() : null)).catch(() => null) : null,
+  ]);
+  res.writeHead(status, { 'Content-Type': TYPES['.html'] }).end(renderPage(html, tags, status, { view, shop }));
 }
 
 const json = (res, status, body) => res.writeHead(status, { 'Content-Type': 'application/json' }).end(JSON.stringify(body));

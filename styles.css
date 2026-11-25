@@ -57,6 +57,7 @@ a { color: inherit; }
   height: 44px; padding: 0 16px; border-radius: 8px;
   background: var(--accent); color: var(--accent-ink); font-size: 14px; font-weight: 600; white-space: nowrap;
 }
+.btn-primary, .btn-secondary { text-decoration: none; }
 .btn-primary:hover { filter: brightness(1.06); }
 .btn-primary.wide { width: 100%; font-size: 13px; }
 .btn-secondary {
@@ -123,6 +124,7 @@ select option { background: var(--panel); color: var(--text); }
 .main-nav { display: flex; gap: 12px; margin-left: 169px; }
 .side-nav { display: flex; align-items: center; gap: 53px; margin-left: auto; }
 .nav-btn { height: 44px; padding: 0 16px; border-radius: 9px; color: var(--muted); font-size: 14px; font-weight: 500; }
+a.nav-btn { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
 .nav-btn:hover { color: var(--text); }
 .nav-btn.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
 .nav-account { background: var(--panel); color: var(--text); font-weight: 600; min-width: 150px; text-align: left; }

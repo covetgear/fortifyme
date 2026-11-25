@@ -34,16 +34,16 @@ Setting up: import the GitHub repo in Vercel (Add New → Project), leave every 
 
 ## Pages
 
-- **Shop** (default): today's Item Shop grouped into its in-game sections, with prices, discounts, time left and a reset countdown. Click a tile to see every item in it, wishlist it or try it on. Link to one item: `?view=shop&item=<cosmetic id>`.
+- **Shop** (default): today's Item Shop grouped into its in-game sections, with prices, discounts, time left and a reset countdown. Click a tile to see every item in it, wishlist it or try it on. Link to one item: `/?item=<cosmetic id>`.
 - **Build**: the combo builder. Shared combo links open here.
 - **Account**: email alerts, saved combos, wishlist, likes.
-- **Sign up** (`?view=signup`) and **Log in** (`?view=login`): from the Figma frames, using Supabase Auth (email + password, 12+ characters). Sign-up sends a confirmation link and shows a "Check your inbox" panel with a resend button. "Forgot password?" emails a reset link that opens **Set a new password** (`?view=reset`). My account asks you to log in first. Logging out clears this browser's copy of the locker (it's in the account).
-- **Alerts turned off** (`?view=alerts-off`): where the unsubscribe link in alert emails lands.
-- **Privacy** (footer link, `?view=privacy`): draft privacy policy. Retention periods, provider list and the children's section are proposals to confirm before launch.
-- **Terms of Service** (`?view=terms`, linked from the footer and the sign-up form): draft terms. Still needs the operator's name and governing law before launch; the 13+ minimum age is a proposal.
-- **Page not found**: shown for any missing page (e.g. `/shopp`) or unknown `?view=`. The local server returns the site with a real 404 status for missing pages (missing images or files still get a plain 404). On Vercel, `public/404.html` does the same.
+- **Sign up** (`/signup`) and **Log in** (`/login`): from the Figma frames, using Supabase Auth (email + password, 12+ characters). Sign-up sends a confirmation link and shows a "Check your inbox" panel with a resend button. "Forgot password?" emails a reset link that opens **Set a new password** (`/reset-password`). My account asks you to log in first. Logging out clears this browser's copy of the locker (it's in the account).
+- **Alerts turned off** (`/alerts-off`): where the unsubscribe link in alert emails lands.
+- **Privacy** (footer link, `/privacy`): draft privacy policy. Retention periods, provider list and the children's section are proposals to confirm before launch.
+- **Terms of Service** (`/terms`, linked from the footer and the sign-up form): draft terms. Still needs the operator's name and governing law before launch; the 13+ minimum age is a proposal.
+- **Page not found**: shown for any missing page (e.g. `/shopp`) or unknown `?view=`. Each page has its own address (`/combo-builder`, `/contact`, … listed in `lib/views.js`); old `?view=<page>` links redirect there permanently. The local server returns the site with a real 404 status for missing pages (missing images or files still get a plain 404). On Vercel, `public/404.html` does the same.
 - **Cookie consent banner**: shows on first visit with equal "Reject all" / "Accept all" buttons and a Customize panel (Essential always on; Analytics and Personalized ads off by default). Reopen it from the footer's "Cookie settings". The choice is saved under `comboLocker.consent`. Nothing optional runs yet; when you add analytics or ads, load them only if `window.comboConsent()` says so and listen for the `consentchange` event. A Global Privacy Control signal forces personalized ads off.
-- **Contact** (footer link, `?view=contact`): a form with a topic, optional name, email and message. The local server saves each message to `out/messages/` (not committed); the live site stores them in Supabase (`public.contact_messages`).
+- **Contact** (footer link, `/contact`): a form with a topic, optional name, email and message. The local server saves each message to `out/messages/` (not committed); the live site stores them in Supabase (`public.contact_messages`).
 
 ## Accounts
 
@@ -65,7 +65,7 @@ When a wishlisted item appears in the shop, the subscriber gets one email with:
 
 - Who gets one: accounts with alerts on, a confirmed email, and a wishlisted item in today's shop (`public.alert_subscribers()`).
 - Each item alerts once per shop listing, logged in `public.alerts_sent`; re-running never double-sends.
-- Every email has a one-click "Turn off wishlist alerts" link plus the `List-Unsubscribe` header (Gmail and Yahoo require it for bulk senders). The `unsubscribe` function turns alerts off and sends people to `?view=alerts-off`.
+- Every email has a one-click "Turn off wishlist alerts" link plus the `List-Unsubscribe` header (Gmail and Yahoo require it for bulk senders). The `unsubscribe` function turns alerts off and sends people to `/alerts-off`.
 - Until `RESEND_API_KEY` and `ALERT_FROM` are set it's a **dry run**: it counts what it would send and sends nothing. See recent runs in the SQL editor: `select status_code, content from net._http_response order by created desc limit 5;`
 - Sends stop at `ALERT_DAILY_CAP` (default 100, Resend's free daily limit); anyone left over gets theirs in a later run.
 - Template preview without sending: `POST /functions/v1/send-alerts?preview=1` with `{"wishlist": ["<item id in today's shop>"], "time_zone": "America/New_York"}`.
@@ -77,7 +77,7 @@ The old local scripts still work for testing (`npm run daily` writes previews to
 
 ## Share previews
 
-Shared combo links look like `/?view=build&outfit=<id>&pickaxe=<id>`. Posted in Discord, iMessage, X, Slack and so on, they show a 1200x630 picture of the combo: the outfit large, the other pieces as tiles.
+Shared combo links look like `/combo-builder?outfit=<id>&pickaxe=<id>`. Posted in Discord, iMessage, X, Slack and so on, they show a 1200x630 picture of the combo: the outfit large, the other pieces as tiles.
 
 - The picture is made by the `combo-card` Edge Function (copy in `supabase/functions/combo-card/`) from item IDs only; names and images come from fortnite-api.com, so nobody can put their own text on a card. With no items it shows a generic "Build your next combo" card, which is also every other page's preview.
 - The page's title, description and picture tags come from `lib/page.mjs`, used by `server.mjs` locally and `api/page.js` on Vercel. **Previews only work on a public address** (the Vercel URL works). Set `SITE_URL` to the public address.

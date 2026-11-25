@@ -5,7 +5,7 @@
 // Sign up, Log in). Privacy page and cookie banner have no Figma frame and reuse the same styles.
 import { itemFacts, timeLeft, leavesAt } from './lib/alert-email.js';
 import { SUPABASE_URL, SUPABASE_KEY, ADSENSE_CLIENT, AD_SLOTS, BILLING_ENABLED, PLANS } from './config.js';
-import { VIEW_META } from './lib/views.js';
+import { VIEW_META, viewOfPath } from './lib/views.js';
 
 const ICON = (name) => `assets/icons/${name}.svg`;
 const SLOTS = [
@@ -410,7 +410,7 @@ function openEntry(e) {
 
   const copy = el('button', { type: 'button', className: 'btn-secondary', textContent: 'Copy link' });
   copy.onclick = async () => {
-    const url = `${location.origin}${location.pathname}?view=shop&item=${encodeURIComponent(main?.id || '')}`;
+    const url = `${location.origin}/?item=${encodeURIComponent(main?.id || '')}`;
     try { await navigator.clipboard.writeText(url); toast('Link copied'); } catch { prompt('Copy this link:', url); }
   };
 
@@ -663,7 +663,7 @@ function randomCombo() {
 // Share links put the combo in the query string (not the #hash) so the server can see it and give
 // the link a preview picture in Discord, iMessage, X and so on (see server.mjs and the combo-card function).
 // Older #outfit=… links still open in the builder.
-const shareUrl = (combo) => `${new URL('./', document.baseURI).href}?view=build&${comboToHash(combo)}`;
+const shareUrl = (combo) => `${location.origin}${VIEW_META.build.path}?${comboToHash(combo)}`;
 async function copyLink(combo) {
   const url = shareUrl(combo);
   // Phones and tablets: the system share sheet. Elsewhere: copy to the clipboard.
@@ -795,8 +795,7 @@ function renderSignupPreviews() {
 // Sign-in is Supabase Auth. Each account's locker (favorites, wishlist, saved combos, alert settings)
 // is a row in public.lockers; Row Level Security lets people read and write only their own.
 // localStorage keeps a copy, so guests can use everything and signed-in pages load instantly.
-const SITE_ROOT = new URL('./', document.baseURI).href; // e.g. http://localhost:5173/
-const authRedirect = (view) => `${SITE_ROOT}?view=${view}`;
+const authRedirect = (view) => `${location.origin}${VIEW_META[view].path}`; // e.g. https://fortifyme.gg/reset-password
 
 // Email links (confirm sign-up, reset password) come back with the session in the URL hash,
 // which the builder also uses for combos. Take it before anything rewrites the hash.
@@ -1193,7 +1192,7 @@ async function startBilling(btn, action, plan) {
 async function billingReturn(result) {
   const params = new URLSearchParams(location.search);
   params.delete('billing');
-  history.replaceState(null, '', `${location.pathname}?${params}${location.hash}`);
+  history.replaceState(null, '', `${location.pathname}${params.size ? `?${params}` : ''}${location.hash}`);
   if (result === 'cancel') return toast('Checkout canceled. Nothing was charged.');
   if (result !== 'success') return;
   toast('Thanks! Turning off ads…');
@@ -1242,17 +1241,20 @@ function openConsent(manage = false) {
 }
 
 // ================= Views =================
-const VIEWS = ['shop', 'build', 'account', 'contact', 'signup', 'login', 'privacy', 'terms', 'notfound', 'reset', 'alerts-off'];
+// Each page has its own address (lib/views.js: /, /combo-builder, /contact, …). Switching pages pushes a
+// history entry so Back and Forward work; push = false only rewrites the current one (first load, Back).
+const VIEWS = Object.keys(VIEW_META);
 // The server marks a missing page (e.g. /shopp) with this meta tag and a 404 status.
-let badPath = !!document.querySelector('meta[name="http-status"][content="404"]');
-function showView(name) {
-  document.title = VIEW_META[name]?.title ?? document.title;
+const badPath = !!document.querySelector('meta[name="http-status"][content="404"]');
+let currentView = null;
+function showView(name, push = true) {
   // My account (and setting a new password) need a sign-in; come back afterwards.
   if ((name === 'account' || name === 'reset') && !store.account) {
-    if (!authSettled) { authDone.then(() => showView(name)); return; } // still checking for a saved session
+    if (!authSettled) { authDone.then(() => showView(name, push)); return; } // still checking for a saved session
     afterLogin = 'account';
     name = 'login';
   }
+  document.title = VIEW_META[name]?.title ?? document.title;
   if (name === 'signup') hideSignupSent();
   if (name === 'reset') $('#reset-username').value = store.account?.email || '';
   const guest = GUEST[name];
@@ -1270,16 +1272,17 @@ function showView(name) {
   else if (name === 'build') renderStage();
   else if (name === 'contact' && !$('#contact-email').value && store.alerts?.email) $('#contact-email').value = store.alerts.email;
   else if (guest) document.querySelectorAll('.auth-error').forEach((e) => (e.textContent = ''));
-  // Keep the view in the address (?view=shop) so links and refreshes land on the same page.
-  // The 404 page keeps the bad address visible; leaving it goes back to the site's real path.
+  // Put the page's own address in the bar so links and refreshes land on the same page. Its query
+  // (?item=…, ?billing=…) only stays while on the same page. The 404 page keeps the bad address visible.
   if (name !== 'notfound') {
-    const params = new URLSearchParams(location.search);
-    if (params.get('view') !== name) params.delete('item');
-    params.set('view', name);
-    const path = badPath ? document.baseURI.replace(location.origin, '') : location.pathname;
-    badPath = false;
-    history.replaceState(null, '', `${path}?${params}${name === 'build' ? location.hash : ''}`);
+    const path = VIEW_META[name].path;
+    const same = path === location.pathname;
+    const params = new URLSearchParams(same ? location.search : '');
+    params.delete('view');
+    const url = `${path}${params.size ? `?${params}` : ''}${name === 'build' ? location.hash : ''}`;
+    if (url !== location.pathname + location.search + location.hash) history[push && !same ? 'pushState' : 'replaceState'](null, '', url);
   }
+  currentView = name;
   window.scrollTo(0, 0);
 }
 
@@ -1418,7 +1421,7 @@ async function init() {
   if (!consent) openConsent();
   $('#result-count').textContent = 'Loading catalog…';
   const params = new URLSearchParams(location.search);
-  // Combo share links: ?view=build&outfit=…  Move the combo into the #hash like the builder uses.
+  // Combo share links: /combo-builder?outfit=…  Move the combo into the #hash like the builder uses.
   const sharedCombo = SLOTS.some((s) => params.has(s.key) || params.has('pet'));
   if (sharedCombo) {
     const combo = new URLSearchParams();
@@ -1426,14 +1429,17 @@ async function init() {
       if (params.has(key)) combo.set(key, params.get(key));
       params.delete(key);
     }
-    history.replaceState(null, '', `${location.pathname}?${params}#${combo}`);
+    history.replaceState(null, '', `${location.pathname}${params.size ? `?${params}` : ''}#${combo}`);
   }
-  let requested = params.get('view');
+  // The page comes from the path (/contact). An old ?view= link still works where the server didn't
+  // redirect it (opening index.html directly), and an old /#outfit=… builder link opens the builder.
+  const legacy = params.get('view');
+  let requested = legacy ?? viewOfPath(location.pathname);
+  if (requested === 'shop' && !legacy && location.hash.includes('=')) requested = 'build';
   if (AUTH_LINK?.type === 'recovery') requested = 'reset';
   // A missing page or an unknown ?view= shows the 404 page instead of quietly landing on the shop.
-  const landing = badPath || (requested && !VIEWS.includes(requested)) ? 'notfound'
-    : VIEWS.includes(requested) ? requested : location.hash.includes('=') ? 'build' : 'shop';
-  if (landing === 'notfound') showView('notfound');
+  const landing = badPath || !VIEWS.includes(requested) ? 'notfound' : requested;
+  if (landing === 'notfound') showView('notfound', false);
 
   // Ads wait for the sign-in and subscription check, so subscribers never get the ad code.
   document.body.classList.toggle('ad-free', adFree);
@@ -1458,7 +1464,7 @@ async function init() {
   };
   const catalogReq = getJson('api/cosmetics', 'data/cosmetics.json');
   try { shop = await getJson('api/shop', 'data/shop.json'); } catch { /* shop data is optional */ }
-  if (landing === 'shop') showView('shop');
+  if (landing === 'shop') showView('shop', false);
 
   let data;
   try {
@@ -1485,12 +1491,18 @@ async function init() {
   renderStage();
   // Landing page: the requested view, else the builder when opening a shared combo link, else the shop.
   // (The shop was already shown above; re-render it now that favorites, wishlist and "Use in combo" can work.)
-  showView(landing);
+  // If they already moved to another page while the catalog loaded, stay there.
+  showView(currentView ?? landing, false);
+  // Back and Forward between pages
+  addEventListener('popstate', () => {
+    const view = viewOfPath(location.pathname) ?? 'notfound';
+    if (view !== currentView) showView(view, false);
+  });
 
-  // ?view=shop&item=<cosmetic id> opens that item's shop offer (shareable "it's in the shop" link)
+  // /?item=<cosmetic id> opens that item's shop offer (shareable "it's in the shop" link)
   const itemId = params.get('item');
   const offer = itemId && shop.entries?.find((e) => e.items.some((i) => i.id === itemId));
-  if (offer && requested === 'shop') openEntry(offer);
+  if (offer && currentView === 'shop') openEntry(offer);
 }
 
 init();

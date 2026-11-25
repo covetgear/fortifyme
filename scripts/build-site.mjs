@@ -4,12 +4,18 @@
 // Run locally to check: npm run build
 import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { previewTags, renderPage, siteOrigin } from '../lib/page.mjs';
-import { VIEW_META } from '../lib/views.js';
+import { VIEW_META, PATH_ALIASES } from '../lib/views.js';
 import { SUPABASE_URL, ADSENSE_CLIENT } from '../config.js';
 
 const root = new URL('../', import.meta.url);
 const out = new URL('public/', root);
 const FILES = ['favicon.ico', 'app.js', 'config.js', 'styles.css', 'lib/alert-email.js', 'lib/views.js', 'assets', 'data/cosmetics.json', 'data/shop.json'];
+
+// Every page path (lib/views.js) must be rewritten to api/page in vercel.json, or it would be a 404 live.
+const vercel = JSON.parse(await readFile(new URL('vercel.json', root), 'utf8'));
+const rewritten = new Set(vercel.rewrites.flatMap((r) => (r.source === '/' ? ['/'] : (/^\/:page\((.+)\)$/.exec(r.source)?.[1].split('|') ?? []).map((p) => `/${p}`))));
+const missing = [...Object.values(VIEW_META).map((m) => m.path).filter(Boolean), ...Object.keys(PATH_ALIASES)].filter((p) => !rewritten.has(p));
+if (missing.length) throw new Error(`vercel.json rewrites are missing: ${missing.join(', ')}`);
 
 await rm(out, { recursive: true, force: true });
 await mkdir(out, { recursive: true });

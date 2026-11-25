@@ -19,5 +19,5 @@ Deno.serve(async (req) => {
     ok = data === true;
   }
   if (req.method === 'POST') return new Response(ok ? 'Unsubscribed' : 'Unknown link', { status: ok ? 200 : 404 });
-  return new Response(null, { status: 303, headers: { Location: `${SITE_URL}/?view=alerts-off${ok ? '' : '&bad=1'}` } });
+  return new Response(null, { status: 303, headers: { Location: `${SITE_URL}/alerts-off${ok ? '' : '?bad=1'}` } });
 });

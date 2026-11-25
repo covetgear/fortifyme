@@ -63,7 +63,7 @@ Deno.serve(async (req) => {
     }
 
     if (body.action === 'portal') {
-      const s = await stripe.billingPortal.sessions.create({ customer, return_url: `${site}/?view=account` });
+      const s = await stripe.billingPortal.sessions.create({ customer, return_url: `${site}/account` });
       return json({ url: s.url });
     }
 
@@ -79,8 +79,8 @@ Deno.serve(async (req) => {
         subscription_data: { metadata: { supabase_user_id: user.id } },
         allow_promotion_codes: true,
         ...(Deno.env.get('STRIPE_TAX') === 'on' ? { automatic_tax: { enabled: true }, customer_update: { address: 'auto' as const } } : {}),
-        success_url: `${site}/?view=account&billing=success`,
-        cancel_url: `${site}/?view=account&billing=cancel`,
+        success_url: `${site}/account?billing=success`,
+        cancel_url: `${site}/account?billing=cancel`,
       });
       return json({ url: s.url });
     }

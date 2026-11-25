@@ -1,10 +1,11 @@
-// Every page of the live site (/ and /?view=…): index.html with the page's own title, description,
-// canonical link and robots rule, link-preview tags (so combo share links show the combo's name and
-// picture in Discord, iMessage, X and so on), and today's shop drawn in as plain HTML for search
-// engines. An unknown ?view= gets a 404. vercel.json rewrites / here.
+// Every page of the live site (/, /combo-builder, /contact, …): index.html with the page's own title,
+// description, canonical link and robots rule, link-preview tags (so combo share links show the combo's
+// name and picture in Discord, iMessage, X and so on), and today's shop drawn in as plain HTML for search
+// engines. Old ?view= links get a permanent redirect; an unknown ?view= gets a 404.
+// vercel.json rewrites each page's path here (keep its list in step with lib/views.js).
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { previewTags, renderPage, siteOrigin, viewFor } from '../lib/page.mjs';
+import { previewTags, renderPage, route, siteOrigin } from '../lib/page.mjs';
 import { SUPABASE_URL } from '../config.js';
 
 let html = null;
@@ -40,10 +41,18 @@ export async function GET(request) {
   html ??= await readFile(join(process.cwd(), 'index.html'), 'utf8');
   const url = new URL(request.url);
   const site = siteOrigin(process.env, url.origin);
-  const view = viewFor(url.searchParams);
+  // vercel.json rewrites each page's path here as ?__path=<path>; the rest of the query is the visitor's.
+  const params = new URLSearchParams(url.search);
+  const pathname = params.get('__path') ?? (url.pathname.startsWith('/api/') ? '/' : url.pathname);
+  params.delete('__path');
+  const { view, redirect } = route(pathname, params);
+  if (redirect) {
+    return new Response(null, { status: 308, headers: { Location: redirect, 'Cache-Control': 'public, max-age=3600, s-maxage=86400' } });
+  }
   const status = view ? 200 : 404;
+  const search = params.size ? `?${params}` : '';
   const [tags, shop] = await Promise.all([
-    previewTags({ params: url.searchParams, view: view ?? 'notfound', site, pageUrl: `${site}/${url.search}`, supabaseUrl: SUPABASE_URL, nameOf }),
+    previewTags({ params, view: view ?? 'notfound', site, pageUrl: `${site}${pathname}${search}`, supabaseUrl: SUPABASE_URL, nameOf }),
     view === 'shop' ? getShop(url.origin) : null,
   ]);
   return new Response(renderPage(html, tags, status, { view, shop }), {

@@ -1,5 +1,6 @@
 // Tiny local server, mirroring the live site on Vercel. Run: node server.mjs
-// - / gets the page's title, canonical link, preview tags and today's shop like api/page.js does live.
+// - Pages (/, /contact, …) get their title, canonical link, preview tags and today's shop like api/page.js
+//   does live; old ?view= links redirect.
 // - /api/shop and /api/cosmetics run the same code as on Vercel (live data from fortnite-api.com).
 // - POST /api/contact saves each message to out/messages/ (live, api/contact.js stores it in Supabase).
 // - Missing pages get the site with a 404 status, like public/404.html live.
@@ -8,7 +9,7 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { extname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { SUPABASE_URL } from './config.js';
-import { previewTags, renderPage, viewFor } from './lib/page.mjs';
+import { previewTags, renderPage, route } from './lib/page.mjs';
 import { cleanContact } from './lib/contact.mjs';
 import * as shopApi from './api/shop.js';
 import * as cosmeticsApi from './api/cosmetics.js';
@@ -39,7 +40,8 @@ async function nameOf(_slot, id) {
 
 async function sendPage(res, url, origin, status = 200) {
   const html = await readFile(join(ROOT, 'index.html'), 'utf8');
-  const view = status === 404 ? null : viewFor(url.searchParams);
+  const { view, redirect } = status === 404 ? { view: null } : route(url.pathname, url.searchParams);
+  if (redirect) return res.writeHead(308, { Location: redirect }).end();
   if (!view) status = 404;
   const site = SITE_URL || origin;
   const [tags, shop] = await Promise.all([
@@ -84,7 +86,7 @@ createServer(async (req, res) => {
   const url = new URL(req.url, 'http://x');
   const origin = `http://${req.headers.host || `localhost:${PORT}`}`;
   const path = decodeURIComponent(url.pathname);
-  if (path === '/' || path === '/index.html') return sendPage(res, url, origin).catch(() => res.writeHead(500).end('Server error'));
+  if (path === '/' || path === '/index.html' || (!extname(path) && !path.startsWith('/api/'))) return sendPage(res, url, origin).catch(() => res.writeHead(500).end('Server error'));
   if (path === '/api/contact') {
     if (req.method !== 'POST') return json(res, 405, { error: 'Use POST' });
     return handleContact(req, res).catch(() => json(res, 500, { error: 'Server error' }));
